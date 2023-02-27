@@ -7,7 +7,7 @@ This project began in February 2023 with the goal of simplifying the understandi
 
 Currently, I am still in the process of implementation, but after implementation, I intend to post explanatory articles as well.
 
-(For now, we plan to post Japanese first.)
+(For now, I plan to post Japanese first.)
 
 <br/>
 <br/>
