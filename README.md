@@ -12,4 +12,29 @@ Currently, I am still in the process of implementation, but after implementation
 <br/>
 <br/>
 <br/>
-status: under development 🏃
+
+## status
+
+- ✅ reactive system  
+  - ✅ reactive
+  - ✅ ref
+  - ✅ computed
+- ⚠️ virtual dom & renderer  
+  - ✅ h function
+  - ✅ patch function
+  - hydration
+- ❌ template compiler  
+  - directives
+    - v-if
+    - v-on
+    - v-for
+  - binding
+  - mustache
+- ❌ sfc compiler
+  - basic
+  - script setup
+    - defineProps
+    - defineEmits
+- ❌ extension
+  - store
+  - router
