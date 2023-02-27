@@ -3,7 +3,7 @@ chibi-vue is minimam [Vue.js v3](https://github.com/vuejs/core) core implementat
 
 "chibi" means "small" in Japanese. 
 
-This project started in February 2023 with the goal of lowering the hurdle to understanding the core functionality of Vue.js.
+This project began in February 2023 with the goal of simplifying the understanding of Vue's core implementation.
 
 Currently, we are still in the process of implementation, but after implementation, we intend to post explanatory articles as well.
 
