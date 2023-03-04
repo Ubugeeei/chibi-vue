@@ -100,11 +100,14 @@ export function createTextVNode(text: string = " "): VNode {
 
 export function normalizeVNode(child: VNodeChild): VNode {
   if (typeof child === "object") {
-    return cloneVNode(child as VNode);
+    return cloneIfMounted(child as VNode);
   } else {
-    // strings and numbers
     return createVNode(Text, null, String(child));
   }
+}
+
+export function cloneIfMounted(child: VNode): VNode {
+  return child.el === null ? child : cloneVNode(child);
 }
 
 export function cloneVNode<T>(vnode: VNode<T>): VNode<T> {

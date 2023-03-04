@@ -55,23 +55,6 @@ export interface RendererNode {
 
 export interface RendererElement extends RendererNode {}
 
-// An object exposing the internals of a renderer, passed to tree-shakeable
-// features so that they can be decoupled from this file. Keys are shortened
-// to optimize bundle size.
-export interface RendererInternals<
-  HostNode = RendererNode,
-  HostElement = RendererElement
-> {
-  p: PatchFn;
-  um: UnmountFn;
-  r: RemoveFn;
-  mt: MountComponentFn;
-  mc: MountChildrenFn;
-  pc: PatchChildrenFn;
-  n: NextFn;
-  o: RendererOptions<HostNode, HostElement>;
-}
-
 // These functions are created inside a closure and therefore their types cannot
 // be directly exported. In order to avoid maintaining function signatures in
 // two places, we declare them once here and use them inside the closure.
@@ -123,11 +106,7 @@ type SetupRenderEffectFn = (
 ) => void;
 
 // implementation
-export function createRenderer(
-  options: RendererOptions
-  // TODO:
-  // createHydrationFns: typeof createHydrationFunctions
-) {
+export function createRenderer(options: RendererOptions) {
   const {
     insert: hostInsert,
     remove: hostRemove,
@@ -206,6 +185,7 @@ export function createRenderer(
 
   const patchElement = (n1: VNode, n2: VNode) => {
     const el = (n2.el = n1.el!);
+
     const oldProps = n1.props ?? {};
     const newProps = n2.props ?? {};
     patchChildren(n1, n2, el, null);
@@ -273,11 +253,14 @@ export function createRenderer(
   ) => {
     const componentUpdateFn = () => {
       if (!instance.isMounted) {
+        // const { el, props } = initialVNode;
         const subTree = (instance.subTree = renderComponentRoot(instance));
-        // TODO:
-        // hydrateNode!(el as Node, instance.subTree, instance);
+        // if (el) {
+        //   hydrateNode!(el as Node, instance.subTree, instance);
+        // } else {
         patch(null, subTree, container, anchor);
         initialVNode.el = subTree.el;
+        // }
         instance.isMounted = true;
       } else {
         let { next, vnode } = instance;
@@ -292,6 +275,7 @@ export function createRenderer(
         const prevTree = instance.subTree;
         const nextTree = renderComponentRoot(instance);
         instance.subTree = nextTree;
+
         patch(
           prevTree,
           nextTree,
