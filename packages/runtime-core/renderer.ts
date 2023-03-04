@@ -55,6 +55,23 @@ export interface RendererNode {
 
 export interface RendererElement extends RendererNode {}
 
+// An object exposing the internals of a renderer, passed to tree-shakeable
+// features so that they can be decoupled from this file. Keys are shortened
+// to optimize bundle size.
+export interface RendererInternals<
+  HostNode = RendererNode,
+  HostElement = RendererElement
+> {
+  p: PatchFn;
+  um: UnmountFn;
+  r: RemoveFn;
+  mt: MountComponentFn;
+  mc: MountChildrenFn;
+  pc: PatchChildrenFn;
+  n: NextFn;
+  o: RendererOptions<HostNode, HostElement>;
+}
+
 // These functions are created inside a closure and therefore their types cannot
 // be directly exported. In order to avoid maintaining function signatures in
 // two places, we declare them once here and use them inside the closure.
