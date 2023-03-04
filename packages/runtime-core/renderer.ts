@@ -1,4 +1,5 @@
 import { ReactiveEffect } from "../reactivity/effect";
+import { isArray } from "../shared";
 import { ShapeFlags } from "../shared/shapeFlags";
 import { createAppAPI } from "./apiCreateApp";
 import {
@@ -120,6 +121,11 @@ export function createRenderer(options: RendererOptions) {
   } = options;
 
   const patch: PatchFn = (n1, n2, container, anchor) => {
+    if (n1) {
+      unmount(n1);
+      n1 = null;
+    }
+
     const { type, shapeFlag } = n2;
     if (type === Text) {
       processText(n1, n2, container, anchor);
@@ -356,9 +362,11 @@ export function createRenderer(options: RendererOptions) {
   };
 
   const unmount: UnmountFn = (vnode) => {
-    const { shapeFlag } = vnode;
+    const { shapeFlag, children } = vnode;
     if (shapeFlag & ShapeFlags.COMPONENT) {
       unmountComponent(vnode.component!);
+    } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+      unmountChildren(children as VNode[]);
     }
     remove(vnode);
   };
