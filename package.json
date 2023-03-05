@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "cd example/chibi-vue_playground && pnpm i && pnpm run dev",
     "dev:render": "cd example/chibi-vue_render && pnpm i && pnpm run dev",
+    "dev:render_setup": "cd example/chibi-vue_render_setup && pnpm i && pnpm run dev",
     "dev:render:org": "cd example/vue_render && pnpm i && pnpm run dev",
     "dev:template:org": "cd example/vue_template && pnpm i && pnpm run dev"
   },
