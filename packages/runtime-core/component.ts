@@ -11,6 +11,7 @@ import { VNode, VNodeChild } from "./vnode";
 
 export type Data = Record<string, unknown>;
 
+export type Component = ConcreteComponent;
 export type ConcreteComponent = ComponentOptions;
 
 export interface ComponentInternalInstance {

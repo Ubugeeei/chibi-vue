@@ -25,6 +25,7 @@ export function isRef(r: any): r is Ref {
 }
 
 export function ref<T = any>(): Ref<T | undefined>;
+export function ref<T = any>(value: T): Ref<T>;
 export function ref(value?: unknown) {
   return createRef(value, false);
 }
@@ -73,9 +74,7 @@ const shallowUnwrapHandlers: ProxyHandler<any> = {
   },
 };
 
-export function proxyRefs<T extends object>(
-  objectWithRefs: T
-): Ref<T> {
+export function proxyRefs<T extends object>(objectWithRefs: T): Ref<T> {
   return isReactive(objectWithRefs)
     ? objectWithRefs
     : new Proxy(objectWithRefs, shallowUnwrapHandlers);

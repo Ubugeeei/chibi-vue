@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { computed, createApp, h, ref } from "chibi-vue";
+import { createApp, ref, computed, h } from "chibi-vue";
 
 const app = createApp({
   setup() {
