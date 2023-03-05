@@ -23,7 +23,7 @@ Currently, I am still in the process of implementation, but after implementation
   - ✅ h function
   - ✅ patch rendering
 - API
-  ✅ Options API
+  - ✅ Options API
   - Composition API
 - ❌ template compiler  
   - directives
