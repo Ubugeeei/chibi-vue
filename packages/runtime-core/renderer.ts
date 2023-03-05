@@ -121,10 +121,7 @@ export function createRenderer(options: RendererOptions) {
   } = options;
 
   const patch: PatchFn = (n1, n2, container, anchor) => {
-    if (n1) {
-      unmount(n1);
-      n1 = null;
-    }
+    console.log(n2);
 
     const { type, shapeFlag } = n2;
     if (type === Text) {
@@ -259,14 +256,9 @@ export function createRenderer(options: RendererOptions) {
   ) => {
     const componentUpdateFn = () => {
       if (!instance.isMounted) {
-        // const { el, props } = initialVNode;
         const subTree = (instance.subTree = renderComponentRoot(instance));
-        // if (el) {
-        //   hydrateNode!(el as Node, instance.subTree, instance);
-        // } else {
         patch(null, subTree, container, anchor);
         initialVNode.el = subTree.el;
-        // }
         instance.isMounted = true;
       } else {
         let { next, vnode } = instance;
@@ -319,29 +311,19 @@ export function createRenderer(options: RendererOptions) {
         unmountChildren(c1 as VNode[]);
       }
       if (c2 !== c1) {
-        // FIXME: container is null
         hostSetElementText(container, c2 as string);
       }
     } else {
       if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
         if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+          // TODO: dynamic children
           // two arrays, cannot assume anything, do full diff
           let _c1 = (c1 || []) as VNode[];
           let _c2 = (c2 || []) as VNode[];
-          const oldLength = _c1.length;
-          const newLength = _c2.length;
-          const commonLength = Math.min(oldLength, newLength);
           let i;
-          for (i = 0; i < commonLength; i++) {
+          for (i = 0; i < _c2.length; i++) {
             const nextChild = (_c2[i] = normalizeVNode(c2[i]));
             patch(_c1[i], nextChild, container, null);
-          }
-          if (oldLength > newLength) {
-            // remove old
-            unmountChildren(_c1);
-          } else {
-            // mount new
-            mountChildren(_c2, container, anchor);
           }
         } else {
           // no new children, just unmount old
