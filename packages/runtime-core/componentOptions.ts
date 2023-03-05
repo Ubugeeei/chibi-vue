@@ -6,6 +6,7 @@ export type ComponentOptions = {
   data?: () => Record<string, unknown>;
   methods?: { [key: string]: Function };
   computed?: { [key: string]: Function };
+  setup?: () => Record<string, unknown> | (() => VNode);
   render?: () => VNode;
 };
 

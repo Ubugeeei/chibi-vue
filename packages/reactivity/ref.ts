@@ -1,6 +1,6 @@
 import { Dep, createDep } from "./dep";
 import { trackEffects, triggerEffects } from "./effect";
-import { toReactive } from "./reactive";
+import { isReactive, toReactive } from "./reactive";
 
 export interface Ref<T = any> {
   value: T;
@@ -54,4 +54,29 @@ class RefImpl<T> {
     this._value = toReactive(newVal);
     triggerRefValue(this);
   }
+}
+
+export function unref<T>(ref: T | Ref<T>): T {
+  return isRef(ref) ? (ref.value as any) : ref;
+}
+
+const shallowUnwrapHandlers: ProxyHandler<any> = {
+  get: (target, key, receiver) => unref(Reflect.get(target, key, receiver)),
+  set: (target, key, value, receiver) => {
+    const oldValue = target[key];
+    if (isRef(oldValue) && !isRef(value)) {
+      oldValue.value = value;
+      return true;
+    } else {
+      return Reflect.set(target, key, value, receiver);
+    }
+  },
+};
+
+export function proxyRefs<T extends object>(
+  objectWithRefs: T
+): Ref<T> {
+  return isReactive(objectWithRefs)
+    ? objectWithRefs
+    : new Proxy(objectWithRefs, shallowUnwrapHandlers);
 }

@@ -6,22 +6,21 @@ const app = createApp({
     const count = ref(0);
     const countDouble = computed(() => count.value * 2);
 
-    const message = ref("");
+    const message = ref("Hello chibi-vue!");
     const changeMessage = () => {
       count.value++;
       message.value = `Hello chibi-vue! ${count.value} * 2 = ${countDouble.value}`;
     };
 
-    return { count, countDouble, message, changeMessage };
-  },
-  render() {
-    return h(
-      "div",
-      {
-        onClick: this.changeMessage,
-      },
-      this.message
-    );
+    return () => {
+      return h(
+        "div",
+        {
+          onClick: changeMessage,
+        },
+        message.value
+      );
+    };
   },
 });
 

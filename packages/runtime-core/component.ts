@@ -1,11 +1,15 @@
+import { proxyRefs } from "../reactivity";
 import { ReactiveEffect } from "../reactivity/effect";
 import { EffectScope } from "../reactivity/effectScope";
+import { isFunction, isObject } from "../shared";
 import { ComponentOptions, applyOptions } from "./componentOptions";
 import {
   ComponentPublicInstance,
   PublicInstanceProxyHandlers,
 } from "./componentPublicInstance";
 import { VNode, VNodeChild } from "./vnode";
+
+export type Data = Record<string, unknown>;
 
 export type ConcreteComponent = ComponentOptions;
 
@@ -43,11 +47,17 @@ export interface ComponentInternalInstance {
 
   // state
   data: Data;
-
   // TODO:
   // props: Data
   // attrs: Data
   // emit: EmitFn
+
+  /**
+   * setup related
+   * @internal
+   */
+  setupState: Data;
+
   isMounted: boolean;
 
   // [LifecycleHooks.BEFORE_CREATE]: LifecycleHook
@@ -65,8 +75,6 @@ export interface ComponentInternalInstance {
   // [LifecycleHooks.ERROR_CAPTURED]: LifecycleHook
   // [LifecycleHooks.SERVER_PREFETCH]: LifecycleHook<() => Promise<unknown>>
 }
-
-export type Data = Record<string, unknown>;
 
 export type InternalRenderFunction = {
   (
@@ -102,6 +110,7 @@ export function createComponentInstance(
     render: null!,
     ctx: {},
     data: {},
+    setupState: {},
     isMounted: false,
   };
 
@@ -123,10 +132,31 @@ export const unsetCurrentInstance = () => {
 };
 
 export const setupComponent = (instance: ComponentInternalInstance) => {
-  // TODO: type
+  const Component = instance.type as ComponentOptions;
+
   instance.proxy = new Proxy(instance.ctx, PublicInstanceProxyHandlers);
 
+  // Composition API
+  const { setup } = Component;
+  if (setup) {
+    const setupResult = setup();
+    handleSetupResult(instance, setupResult);
+  }
+
+  // Options API
   setCurrentInstance(instance);
   applyOptions(instance);
   unsetCurrentInstance();
 };
+
+export function handleSetupResult(
+  instance: ComponentInternalInstance,
+  setupResult: unknown
+) {
+  if (isFunction(setupResult)) {
+    instance.render = setupResult as InternalRenderFunction;
+  } else if (isObject(setupResult)) {
+    // TODO: type
+    instance.setupState = proxyRefs(setupResult) as any;
+  }
+}
