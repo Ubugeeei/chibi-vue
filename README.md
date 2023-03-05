@@ -19,7 +19,7 @@ Currently, I am still in the process of implementation, but after implementation
   - ✅ reactive
   - ✅ ref
   - ✅ computed
-✅ ⚠️ virtual dom & renderer  
+- ✅ virtual dom & renderer  
   - ✅ h function
   - ✅ patch rendering
 - API
