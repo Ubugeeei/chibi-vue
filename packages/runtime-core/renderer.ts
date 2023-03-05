@@ -1,5 +1,4 @@
 import { ReactiveEffect } from "../reactivity/effect";
-import { isArray } from "../shared";
 import { ShapeFlags } from "../shared/shapeFlags";
 import { createAppAPI } from "./apiCreateApp";
 import {
