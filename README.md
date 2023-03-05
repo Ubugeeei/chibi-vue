@@ -24,7 +24,7 @@ Currently, I am still in the process of implementation, but after implementation
   - ✅ patch rendering
 - API
   - ✅ Options API
-  - Composition API
+  - ✅ Composition API
 - ❌ template compiler  
   - directives
     - v-if
