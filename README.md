@@ -22,6 +22,9 @@ Currently, I am still in the process of implementation, but after implementation
 ✅ ⚠️ virtual dom & renderer  
   - ✅ h function
   - ✅ patch rendering
+- API
+  ✅ Options API
+  - Composition API
 - ❌ template compiler  
   - directives
     - v-if
