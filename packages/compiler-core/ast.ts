@@ -2,6 +2,8 @@ export const enum NodeTypes {
   ROOT,
   ELEMENT,
   TEXT,
+  INTERPOLATION,
+  SIMPLE_EXPRESSION,
   ATTRIBUTE,
 }
 
@@ -22,7 +24,10 @@ export interface Position {
 
 export type ParentNode = RootNode | ElementNode;
 
-export type TemplateChildNode = ElementNode | TextNode;
+export type ExpressionNode = SimpleExpressionNode;
+// | CompoundExpressionNode
+
+export type TemplateChildNode = ElementNode | TextNode | InterpolationNode;
 
 export interface RootNode extends Node {
   type: NodeTypes.ROOT;
@@ -48,8 +53,18 @@ export interface TextNode extends Node {
   content: string;
 }
 
+export interface InterpolationNode extends Node {
+  type: NodeTypes.INTERPOLATION;
+  content: ExpressionNode;
+}
+
 export interface ComponentNode extends BaseElementNode {
   tagType: ElementTypes.COMPONENT;
+}
+
+export interface SimpleExpressionNode extends Node {
+  type: NodeTypes.SIMPLE_EXPRESSION;
+  content: string;
 }
 
 export interface AttributeNode extends Node {
