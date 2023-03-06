@@ -14,6 +14,12 @@ export interface Node {
   type: NodeTypes;
 }
 
+export interface Position {
+  offset: number; // from start of file
+  line: number;
+  column: number;
+}
+
 export type ParentNode = RootNode | ElementNode;
 
 export type TemplateChildNode = ElementNode | TextNode;
