@@ -290,7 +290,6 @@ function parseAttribute(
   nameSet: Set<string>
 ): AttributeNode {
   // Name.
-  const start = getCursor(context);
   const match = /^[^\t\r\n\f />][^\t\r\n\f />=]*/.exec(context.source)!;
   const name = match[0];
 
@@ -365,8 +364,37 @@ function isEnd(
   mode: TextModes,
   ancestors: ElementNode[]
 ): boolean {
-  // TODO:
-  return false;
+  const s = context.source;
+
+  switch (mode) {
+    case TextModes.DATA:
+      if (startsWith(s, "</")) {
+        // TODO: probably bad performance
+        for (let i = ancestors.length - 1; i >= 0; --i) {
+          if (startsWithEndTagOpen(s, ancestors[i].tag)) {
+            return true;
+          }
+        }
+      }
+      break;
+
+    case TextModes.RCDATA:
+    case TextModes.RAWTEXT: {
+      const parent = last(ancestors);
+      if (parent && startsWithEndTagOpen(s, parent.tag)) {
+        return true;
+      }
+      break;
+    }
+
+    case TextModes.CDATA:
+      if (startsWith(s, "]]>")) {
+        return true;
+      }
+      break;
+  }
+
+  return !s;
 }
 
 function startsWith(source: string, searchString: string): boolean {
