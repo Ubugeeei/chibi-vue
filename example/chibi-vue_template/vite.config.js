@@ -3,7 +3,7 @@ import { defineConfig } from "vite";
 console.log(`${process.cwd()}/../../example`);
 
 export default defineConfig({
-  root: `${process.cwd()}/../../example/chibi-vue_html`,
+  root: `${process.cwd()}/../../example/chibi-vue_template`,
   resolve: {
     alias: {
       "~": process.cwd(),

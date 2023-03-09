@@ -144,6 +144,11 @@ export const setupComponent = (instance: ComponentInternalInstance) => {
     handleSetupResult(instance, setupResult);
   }
 
+  if (compile && !Component.render) {
+    const template = Component.template ?? "";
+    Component.render = compile(template);
+  }
+
   // Options API
   setCurrentInstance(instance);
   applyOptions(instance);
