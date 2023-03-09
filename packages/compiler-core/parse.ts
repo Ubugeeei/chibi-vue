@@ -91,9 +91,19 @@ function parseChildren(
       if (startsWith(s, context.options.delimiters![0])) {
         node = parseInterpolation(context, mode);
       } else if (mode === TextModes.DATA && s[0] === "<") {
+        if (s[1] === "/") {
+          // TODO: parse end tag
+        } else if (/[a-z]/i.test(s[1])) {
+          // TODO: parse start tag
+        }
       }
     }
+    if (!node) {
+      // TODO: parse text
+      // node = parseText(context, mode);
+    }
   }
+
   // TODO:
   return [];
 }
