@@ -1,3 +1,4 @@
+import { isArray } from "../shared";
 import {
   AttributeNode,
   ElementNode,
@@ -112,10 +113,32 @@ function parseChildren(
     if (!node) {
       node = parseText(context, mode);
     }
+
+    if (isArray(node)) {
+      for (let i = 0; i < node.length; i++) {
+        pushNode(nodes, node[i]);
+      }
+    } else {
+      pushNode(nodes, node);
+    }
   }
 
   // TODO:
   return [];
+}
+
+function pushNode(nodes: TemplateChildNode[], node: TemplateChildNode): void {
+  if (node.type === NodeTypes.TEXT) {
+    const prev = last(nodes);
+    // Merge if both this and the previous node are text and those are
+    // consecutive. This happens for cases like "a < b".
+    if (prev && prev.type === NodeTypes.TEXT) {
+      prev.content += node.content;
+      return;
+    }
+  }
+
+  nodes.push(node);
 }
 
 function parseInterpolation(
