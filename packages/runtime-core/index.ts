@@ -1,8 +1,11 @@
 export { type CreateAppFunction } from "./apiCreateApp";
 export { type RendererOptions, createRenderer } from "./renderer";
 
-export { type ComponentInternalInstance } from "./component";
-export { type ComponentOptions } from "./componentOptions";
+export {
+  type ComponentInternalInstance,
+  registerRuntimeCompiler,
+} from "./component";
+export { type ComponentOptions, type RenderFunction } from "./componentOptions";
 export { type ComponentPublicInstance } from "./componentPublicInstance";
 
 export {

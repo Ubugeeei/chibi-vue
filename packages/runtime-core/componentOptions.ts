@@ -1,6 +1,8 @@
 import { computed, reactive } from "../reactivity";
 import { type ComponentInternalInstance } from "./component";
-import { type VNode } from "./vnode";
+import { VNodeChild, type VNode } from "./vnode";
+
+export type RenderFunction = () => VNodeChild;
 
 export type ComponentOptions = {
   data?: () => Record<string, unknown>;
