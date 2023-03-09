@@ -5,6 +5,7 @@ import {
   Position,
   RootNode,
   TemplateChildNode,
+  TextNode,
   createRoot,
 } from "./ast";
 import { ParserOptions } from "./options";
@@ -99,8 +100,7 @@ function parseChildren(
       }
     }
     if (!node) {
-      // TODO: parse text
-      // node = parseText(context, mode);
+      node = parseText(context, mode);
     }
   }
 
@@ -138,6 +138,25 @@ function parseInterpolation(
       type: NodeTypes.SIMPLE_EXPRESSION,
       content,
     },
+  };
+}
+
+function parseText(context: ParserContext, mode: TextModes): TextNode {
+  const endTokens = ["<", context.options.delimiters![0]];
+
+  let endIndex = context.source.length;
+  for (let i = 0; i < endTokens.length; i++) {
+    const index = context.source.indexOf(endTokens[i], 1);
+    if (index !== -1 && endIndex > index) {
+      endIndex = index;
+    }
+  }
+
+  const content = parseTextData(context, endIndex, mode);
+
+  return {
+    type: NodeTypes.TEXT,
+    content,
   };
 }
 
