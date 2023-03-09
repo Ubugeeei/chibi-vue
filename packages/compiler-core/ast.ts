@@ -10,6 +10,7 @@ export const enum NodeTypes {
 export const enum ElementTypes {
   ELEMENT,
   COMPONENT,
+  TEMPLATE,
 }
 
 export interface Node {
@@ -34,7 +35,7 @@ export interface RootNode extends Node {
   children: TemplateChildNode[];
 }
 
-export type ElementNode = PlainElementNode | ComponentNode;
+export type ElementNode = PlainElementNode | ComponentNode | TemplateNode;
 
 export interface BaseElementNode extends Node {
   type: NodeTypes.ELEMENT;
@@ -46,6 +47,10 @@ export interface BaseElementNode extends Node {
 
 export interface PlainElementNode extends BaseElementNode {
   tagType: ElementTypes.ELEMENT;
+}
+
+export interface TemplateNode extends BaseElementNode {
+  tagType: ElementTypes.TEMPLATE;
 }
 
 export interface TextNode extends Node {

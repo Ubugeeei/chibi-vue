@@ -1,5 +1,8 @@
 import {
+  AttributeNode,
   ElementNode,
+  ElementTypes,
+  ExpressionNode,
   InterpolationNode,
   NodeTypes,
   Position,
@@ -10,6 +13,12 @@ import {
 } from "./ast";
 import { ParserOptions } from "./options";
 import { advancePositionWithMutation } from "./utils";
+
+type AttributeValue =
+  | {
+      content: string;
+    }
+  | undefined;
 
 // The default decoder only provides escapes for characters reserved as part of
 // the template syntax, and is only used if the custom renderer did not provide
@@ -27,6 +36,7 @@ export const defaultParserOptions: Required<ParserOptions> = {
   delimiters: [`{{`, `}}`],
   decodeEntities: (rawText: string): string =>
     rawText.replace(decodeRE, (_, p1) => decodeMap[p1]),
+  getTextMode: () => TextModes.DATA,
 };
 
 export const enum TextModes {
@@ -85,6 +95,7 @@ function parseChildren(
   ancestors: ElementNode[]
 ): TemplateChildNode[] {
   const nodes: TemplateChildNode[] = [];
+
   while (!isEnd(context, mode, ancestors)) {
     const s = context.source;
     let node: TemplateChildNode | TemplateChildNode[] | undefined = undefined;
@@ -92,13 +103,12 @@ function parseChildren(
       if (startsWith(s, context.options.delimiters![0])) {
         node = parseInterpolation(context, mode);
       } else if (mode === TextModes.DATA && s[0] === "<") {
-        if (s[1] === "/") {
-          // TODO: parse end tag
-        } else if (/[a-z]/i.test(s[1])) {
-          // TODO: parse start tag
+        if (/[a-z]/i.test(s[1])) {
+          node = parseElement(context, ancestors);
         }
       }
     }
+
     if (!node) {
       node = parseText(context, mode);
     }
@@ -160,6 +170,168 @@ function parseText(context: ParserContext, mode: TextModes): TextNode {
   };
 }
 
+function parseElement(
+  context: ParserContext,
+  ancestors: ElementNode[]
+): ElementNode | undefined {
+  // Start tag.
+  const parent = last(ancestors);
+  const element = parseTag(context, TagType.Start);
+
+  // Children.
+  ancestors.push(element);
+  const mode = context.options.getTextMode!(element, parent);
+  const children = parseChildren(context, mode, ancestors);
+  ancestors.pop();
+
+  element.children = children;
+
+  // End tag.
+  if (startsWithEndTagOpen(context.source, element.tag)) {
+    parseTag(context, TagType.End);
+  }
+
+  return element;
+}
+
+const enum TagType {
+  Start,
+  End,
+}
+
+function parseTag(context: ParserContext, type: TagType): ElementNode {
+  // Tag open.
+  const match = /^<\/?([a-z][^\t\r\n\f />]*)/i.exec(context.source)!;
+  const tag = match[1];
+
+  advanceBy(context, match[0].length);
+  advanceSpaces(context);
+
+  // Attributes.
+  let props = parseAttributes(context, type);
+
+  // Tag close.
+  let isSelfClosing = false;
+
+  isSelfClosing = startsWith(context.source, "/>");
+  advanceBy(context, isSelfClosing ? 2 : 1);
+
+  let tagType = ElementTypes.ELEMENT;
+
+  if (tag === "template") {
+    tagType = ElementTypes.TEMPLATE;
+  }
+
+  return {
+    type: NodeTypes.ELEMENT,
+    tag,
+    tagType,
+    props,
+    children: [],
+  };
+}
+
+function parseAttributes(
+  context: ParserContext,
+  type: TagType
+): AttributeNode[] {
+  const props = [];
+  const attributeNames = new Set<string>();
+  while (
+    context.source.length > 0 &&
+    !startsWith(context.source, ">") &&
+    !startsWith(context.source, "/>")
+  ) {
+    const attr = parseAttribute(context, attributeNames);
+
+    // Trim whitespace between class
+    // https://github.com/vuejs/core/issues/4251
+    if (
+      attr.type === NodeTypes.ATTRIBUTE &&
+      attr.value &&
+      attr.name === "class"
+    ) {
+      attr.value.content = attr.value.content.replace(/\s+/g, " ").trim();
+    }
+
+    if (type === TagType.Start) {
+      props.push(attr);
+    }
+
+    advanceSpaces(context);
+  }
+  return props;
+}
+
+function parseAttribute(
+  context: ParserContext,
+  nameSet: Set<string>
+): AttributeNode {
+  // Name.
+  const start = getCursor(context);
+  const match = /^[^\t\r\n\f />][^\t\r\n\f />=]*/.exec(context.source)!;
+  const name = match[0];
+
+  nameSet.add(name);
+
+  advanceBy(context, name.length);
+
+  // Value
+  let value: AttributeValue = undefined;
+
+  if (/^[\t\r\n\f ]*=/.test(context.source)) {
+    advanceSpaces(context);
+    advanceBy(context, 1);
+    advanceSpaces(context);
+    value = parseAttributeValue(context);
+  }
+
+  return {
+    type: NodeTypes.ATTRIBUTE,
+    name,
+    value: value && {
+      type: NodeTypes.TEXT,
+      content: value.content,
+    },
+  };
+}
+
+function parseAttributeValue(context: ParserContext): AttributeValue {
+  let content: string;
+
+  const quote = context.source[0];
+  const isQuoted = quote === `"` || quote === `'`;
+  if (isQuoted) {
+    // Quoted value.
+    advanceBy(context, 1);
+
+    const endIndex = context.source.indexOf(quote);
+    if (endIndex === -1) {
+      content = parseTextData(
+        context,
+        context.source.length,
+        TextModes.ATTRIBUTE_VALUE
+      );
+    } else {
+      content = parseTextData(context, endIndex, TextModes.ATTRIBUTE_VALUE);
+      advanceBy(context, 1);
+    }
+  } else {
+    // Unquoted
+    const match = /^[^\t\r\n\f >]+/.exec(context.source);
+    if (!match) {
+      return undefined;
+    }
+    content = parseTextData(
+      context,
+      match[0].length,
+      TextModes.ATTRIBUTE_VALUE
+    );
+  }
+
+  return { content };
+}
+
 function advanceBy(context: ParserContext, numberOfCharacters: number): void {
   const { source } = context;
   advancePositionWithMutation(context, source, numberOfCharacters);
@@ -177,6 +349,13 @@ function isEnd(
 
 function startsWith(source: string, searchString: string): boolean {
   return source.startsWith(searchString);
+}
+
+function advanceSpaces(context: ParserContext): void {
+  const match = /^[\t\r\n\f ]+/.exec(context.source);
+  if (match) {
+    advanceBy(context, match[0].length);
+  }
 }
 
 /**
@@ -208,4 +387,16 @@ function parseTextData(
 function getCursor(context: ParserContext): Position {
   const { column, line, offset } = context;
   return { column, line, offset };
+}
+
+function last<T>(xs: T[]): T | undefined {
+  return xs[xs.length - 1];
+}
+
+function startsWithEndTagOpen(source: string, tag: string): boolean {
+  return (
+    startsWith(source, "</") &&
+    source.slice(2, 2 + tag.length).toLowerCase() === tag.toLowerCase() &&
+    /[\t\r\n\f />]/.test(source[2 + tag.length] || ">")
+  );
 }
