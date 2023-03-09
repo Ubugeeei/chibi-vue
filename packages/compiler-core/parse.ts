@@ -123,8 +123,7 @@ function parseChildren(
     }
   }
 
-  // TODO:
-  return [];
+  return nodes;
 }
 
 function pushNode(nodes: TemplateChildNode[], node: TemplateChildNode): void {
