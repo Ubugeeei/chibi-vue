@@ -1,9 +1,9 @@
 import { isArray } from "../shared";
 import {
   AttributeNode,
+  DirectiveNode,
   ElementNode,
   ElementTypes,
-  ExpressionNode,
   InterpolationNode,
   NodeTypes,
   Position,
@@ -256,7 +256,7 @@ function parseTag(context: ParserContext, type: TagType): ElementNode {
 function parseAttributes(
   context: ParserContext,
   type: TagType
-): AttributeNode[] {
+): (AttributeNode | DirectiveNode)[] {
   const props = [];
   const attributeNames = new Set<string>();
   while (

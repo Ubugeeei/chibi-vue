@@ -4,7 +4,9 @@ export const enum NodeTypes {
   TEXT,
   INTERPOLATION,
   SIMPLE_EXPRESSION,
+
   ATTRIBUTE,
+  DIRECTIVE,
 }
 
 export const enum ElementTypes {
@@ -41,7 +43,7 @@ export interface BaseElementNode extends Node {
   type: NodeTypes.ELEMENT;
   tag: string;
   tagType: ElementTypes;
-  props: Array<AttributeNode>;
+  props: Array<AttributeNode | DirectiveNode>;
   children: TemplateChildNode[];
 }
 
@@ -76,6 +78,13 @@ export interface AttributeNode extends Node {
   type: NodeTypes.ATTRIBUTE;
   name: string;
   value: TextNode | undefined;
+}
+
+export interface DirectiveNode extends Node {
+  type: NodeTypes.DIRECTIVE;
+  name: string;
+  exp: ExpressionNode | undefined;
+  arg: ExpressionNode | undefined;
 }
 
 // AST Utilities ---------------------------------------------------------------
