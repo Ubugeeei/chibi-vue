@@ -4,6 +4,7 @@ import {
   DirectiveNode,
   ElementNode,
   ElementTypes,
+  ExpressionNode,
   InterpolationNode,
   NodeTypes,
   Position,
@@ -288,7 +289,7 @@ function parseAttributes(
 function parseAttribute(
   context: ParserContext,
   nameSet: Set<string>
-): AttributeNode {
+): AttributeNode | DirectiveNode {
   // Name.
   const match = /^[^\t\r\n\f />][^\t\r\n\f />=]*/.exec(context.source)!;
   const name = match[0];
@@ -305,6 +306,44 @@ function parseAttribute(
     advanceBy(context, 1);
     advanceSpaces(context);
     value = parseAttributeValue(context);
+  }
+
+  // directive
+  if (/^(v-[A-Za-z0-9-]|:|\.|@|#)/.test(name)) {
+    const match =
+      /(?:^v-([a-z0-9-]+))?(?:(?::|^\.|^@|^#)(\[[^\]]+\]|[^\.]+))?(.+)?$/i.exec(
+        name
+      )!;
+
+    let isPropShorthand = startsWith(name, ".");
+
+    let dirName =
+      match[1] ||
+      (isPropShorthand || startsWith(name, ":")
+        ? "bind"
+        : startsWith(name, "@")
+        ? "on"
+        : "");
+
+    let arg: ExpressionNode | undefined;
+
+    if (match[2]) {
+      let content = match[2];
+      arg = {
+        type: NodeTypes.SIMPLE_EXPRESSION,
+        content,
+      };
+    }
+
+    return {
+      type: NodeTypes.DIRECTIVE,
+      name: dirName,
+      exp: value && {
+        type: NodeTypes.SIMPLE_EXPRESSION,
+        content: value.content,
+      },
+      arg,
+    };
   }
 
   return {
