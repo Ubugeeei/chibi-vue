@@ -29,3 +29,7 @@ function normalizeContainer(container: Element | string): Element | null {
     return container;
   }
 }
+
+// re-export everything from core
+// h, Component, reactivity API, nextTick, flags & types
+export * from "../runtime-core";
