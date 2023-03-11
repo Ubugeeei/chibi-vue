@@ -1,7 +1,8 @@
-import { isArray, isString } from "../shared";
+import { isArray, isString, isSymbol } from "../shared";
 import {
   ArrayExpression,
   CallExpression,
+  CompoundExpressionNode,
   ExpressionNode,
   InterpolationNode,
   JSChildNode,
@@ -16,7 +17,6 @@ import {
 import {
   CREATE_ELEMENT_VNODE,
   TO_DISPLAY_STRING,
-  WITH_DIRECTIVES,
   helperNameMap,
 } from "./runtimeHelpers";
 
@@ -77,16 +77,16 @@ function createCodegenContext(): CodegenContext {
 
 export function generate(ast: RootNode): CodegenResult {
   const context = createCodegenContext();
-  const { push, indent, deindent } = context;
+  const { push } = context;
 
-  push(`function render() {`);
-  indent();
+  push(`function render() { `);
   push(`return `);
-  if (ast.codegenNode) {
-    genNode(ast.codegenNode, context);
+  if (ast.children) {
+    ast.children.forEach((codegenNode) => {
+      genNode(codegenNode, context);
+    });
   }
-  deindent();
-  push(`}`);
+  push(` }`);
 
   return {
     ast,
@@ -94,29 +94,38 @@ export function generate(ast: RootNode): CodegenResult {
   };
 }
 
-function genNode(node: CodegenNode | string, context: CodegenContext) {
+function genNode(node: CodegenNode | symbol | string, context: CodegenContext) {
   if (isString(node)) {
     context.push(node);
     return;
   }
 
+  if (isSymbol(node)) {
+    context.push(context.helper(node));
+    return;
+  }
+
   switch (node.type) {
-    case NodeTypes.ELEMENT:
+    case NodeTypes.ELEMENT: {
       genNode(node.codegenNode!, context);
       break;
+    }
+
     case NodeTypes.TEXT:
       genText(node, context);
-      break;
-    case NodeTypes.INTERPOLATION:
-      genInterpolation(node, context);
       break;
     case NodeTypes.SIMPLE_EXPRESSION:
       genExpression(node, context);
       break;
+    case NodeTypes.INTERPOLATION:
+      genInterpolation(node, context);
+      break;
     case NodeTypes.VNODE_CALL:
       genVNodeCall(node, context);
       break;
-
+    case NodeTypes.COMPOUND_EXPRESSION:
+      genCompoundExpression(node, context);
+      break;
     case NodeTypes.JS_CALL_EXPRESSION:
       genCallExpression(node, context);
       break;
@@ -139,8 +148,8 @@ function genText(node: TextNode, context: CodegenContext) {
 }
 
 function genExpression(node: SimpleExpressionNode, context: CodegenContext) {
-  const { content } = node;
-  context.push(content, node);
+  const { content, isStatic } = node;
+  context.push(isStatic ? JSON.stringify(content) : content, node);
 }
 
 function genInterpolation(node: InterpolationNode, context: CodegenContext) {
@@ -150,29 +159,43 @@ function genInterpolation(node: InterpolationNode, context: CodegenContext) {
   push(`)`);
 }
 
+function genCompoundExpression(
+  node: CompoundExpressionNode,
+  context: CodegenContext
+) {
+  for (let i = 0; i < node.children!.length; i++) {
+    const child = node.children![i];
+    if (isString(child)) {
+      context.push(child);
+    } else {
+      genNode(child, context);
+    }
+  }
+}
+
 function genExpressionAsPropertyKey(
   node: ExpressionNode,
   context: CodegenContext
 ) {
   const { push } = context;
-  push(`[${node.content}]`, node);
+  if (node.type === NodeTypes.COMPOUND_EXPRESSION) {
+    push(`[`);
+    genCompoundExpression(node, context);
+    push(`]`);
+  } else if (node.isStatic) {
+    push(JSON.stringify(node.content), node);
+  } else {
+    push(`[${node.content}]`, node);
+  }
 }
 
 function genVNodeCall(node: VNodeCall, context: CodegenContext) {
   const { push, helper } = context;
-  const { tag, props, children, directives } = node;
-  if (directives) {
-    push(helper(WITH_DIRECTIVES) + `(`);
-  }
+  const { tag, props, children } = node;
 
   push(helper(CREATE_ELEMENT_VNODE) + `(`, node);
   genNodeList(genNullableArgs([tag, props, children]), context);
   push(`)`);
-  if (directives) {
-    push(`, `);
-    genNode(directives, context);
-    push(`)`);
-  }
 }
 
 function genNullableArgs(args: any[]): CallExpression["arguments"] {
@@ -193,13 +216,15 @@ function genCallExpression(node: CallExpression, context: CodegenContext) {
 }
 
 function genObjectExpression(node: ObjectExpression, context: CodegenContext) {
-  const { push, newline } = context;
+  const { push } = context;
   const { properties } = node;
+
   if (!properties.length) {
     push(`{}`, node);
     return;
   }
 
+  push(`{ `);
   for (let i = 0; i < properties.length; i++) {
     const { key, value } = properties[i];
     // key
@@ -210,10 +235,8 @@ function genObjectExpression(node: ObjectExpression, context: CodegenContext) {
     if (i < properties.length - 1) {
       // will only reach this if it's multilines
       push(`,`);
-      newline();
     }
   }
-
   push(` }`);
 }
 
@@ -232,7 +255,8 @@ function genNodeListAsArray(
 
 function genNodeList(
   nodes: (string | CodegenNode | TemplateChildNode[])[],
-  context: CodegenContext
+  context: CodegenContext,
+  comma: boolean = true
 ) {
   const { push } = context;
   for (let i = 0; i < nodes.length; i++) {
@@ -243,6 +267,10 @@ function genNodeList(
       genNodeListAsArray(node, context);
     } else {
       genNode(node, context);
+    }
+
+    if (i < nodes.length - 1) {
+      comma && push(", ");
     }
   }
 }
