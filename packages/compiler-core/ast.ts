@@ -1,4 +1,7 @@
+import { WITH_DIRECTIVES } from "./runtimeHelpers";
+import { TransformContext } from "./transform";
 import { PropsExpression } from "./transforms/transformElement";
+import { getVNodeHelper } from "./utils";
 
 export const enum NodeTypes {
   ROOT,
@@ -43,7 +46,7 @@ export type TemplateChildNode = ElementNode | TextNode | InterpolationNode;
 
 export interface VNodeCall extends Node {
   type: NodeTypes.VNODE_CALL;
-  tag: string | CallExpression;
+  tag: string | symbol | CallExpression;
   props: PropsExpression | undefined;
   children:
     | TemplateChildNode[] // multiple children
@@ -85,7 +88,7 @@ export interface Property extends Node {
 export interface RootNode extends Node {
   type: NodeTypes.ROOT;
   children: TemplateChildNode[];
-  codegenNode: TemplateChildNode | undefined;
+  codegenNode: (TemplateChildNode | VNodeCall)[] | undefined;
 }
 
 export type ElementNode = PlainElementNode | ComponentNode | TemplateNode;
@@ -100,7 +103,7 @@ export interface BaseElementNode extends Node {
 
 export interface PlainElementNode extends BaseElementNode {
   tagType: ElementTypes.ELEMENT;
-  codegenNode: VNodeCall | SimpleExpressionNode | undefined;
+  codegenNode: (VNodeCall | SimpleExpressionNode)[] | undefined;
 }
 
 export interface TemplateNode extends BaseElementNode {
@@ -168,5 +171,30 @@ export function createRoot(children: TemplateChildNode[]): RootNode {
     type: NodeTypes.ROOT,
     children,
     codegenNode: undefined,
+  };
+}
+
+export function createVNodeCall(
+  context: TransformContext | null,
+  tag: VNodeCall["tag"],
+  props?: VNodeCall["props"],
+  children?: VNodeCall["children"],
+  directives?: VNodeCall["directives"],
+  isComponent: VNodeCall["isComponent"] = false
+): VNodeCall {
+  if (context) {
+    context.helper(getVNodeHelper(isComponent));
+    if (directives) {
+      context.helper(WITH_DIRECTIVES);
+    }
+  }
+
+  return {
+    type: NodeTypes.VNODE_CALL,
+    tag,
+    props,
+    children,
+    directives,
+    isComponent,
   };
 }
