@@ -59,28 +59,14 @@ export interface ParserContext {
   column: number;
 }
 
-export function baseParse(
-  content: string,
-  options: ParserOptions = {}
-): RootNode {
-  const context = createParserContext(content, options);
+export function baseParse(content: string): RootNode {
+  const context = createParserContext(content);
   return createRoot(parseChildren(context, TextModes.DATA, []));
 }
 
-function createParserContext(
-  content: string,
-  rawOptions: ParserOptions
-): ParserContext {
+function createParserContext(content: string): ParserContext {
   const options = { ...defaultParserOptions };
 
-  let key: keyof ParserOptions;
-  for (key in rawOptions) {
-    // @ts-ignore
-    options[key] =
-      rawOptions[key] === undefined
-        ? defaultParserOptions[key]
-        : rawOptions[key];
-  }
   return {
     options,
     column: 1,
