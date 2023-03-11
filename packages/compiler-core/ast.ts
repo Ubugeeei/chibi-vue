@@ -1,3 +1,4 @@
+import { isString } from "../shared";
 import { WITH_DIRECTIVES } from "./runtimeHelpers";
 import { TransformContext } from "./transform";
 import { PropsExpression } from "./transforms/transformElement";
@@ -12,6 +13,8 @@ export const enum NodeTypes {
 
   ATTRIBUTE,
   DIRECTIVE,
+
+  COMPOUND_EXPRESSION,
 
   // codegen
   VNODE_CALL,
@@ -39,8 +42,7 @@ export interface Position {
 
 export type ParentNode = RootNode | ElementNode;
 
-export type ExpressionNode = SimpleExpressionNode;
-// | CompoundExpressionNode
+export type ExpressionNode = SimpleExpressionNode | CompoundExpressionNode;
 
 export type TemplateChildNode = ElementNode | TextNode | InterpolationNode;
 export type TemplateTextChildNode = TextNode | InterpolationNode;
@@ -134,6 +136,25 @@ export interface SimpleExpressionNode extends Node {
   content: string;
 }
 
+export interface CompoundExpressionNode extends Node {
+  type: NodeTypes.COMPOUND_EXPRESSION;
+  children: (
+    | SimpleExpressionNode
+    | CompoundExpressionNode
+    | InterpolationNode
+    | TextNode
+    | string
+    | symbol
+  )[];
+
+  /**
+   * an expression parsed as the params of a function will track
+   * the identifiers declared inside the function body.
+   */
+  identifiers?: string[];
+  isHandlerKey?: boolean;
+}
+
 export interface AttributeNode extends Node {
   type: NodeTypes.ATTRIBUTE;
   name: string;
@@ -207,5 +228,44 @@ export function createArrayExpression(
   return {
     type: NodeTypes.JS_ARRAY_EXPRESSION,
     elements,
+  };
+}
+
+export function createObjectExpression(
+  properties: ObjectExpression["properties"]
+): ObjectExpression {
+  return {
+    type: NodeTypes.JS_OBJECT_EXPRESSION,
+    properties,
+  };
+}
+
+export function createObjectProperty(
+  key: Property["key"] | string,
+  value: Property["value"]
+): Property {
+  return {
+    type: NodeTypes.JS_PROPERTY,
+    key: isString(key) ? createSimpleExpression(key) : key,
+    value,
+  };
+}
+
+export function createSimpleExpression(
+  content: SimpleExpressionNode["content"]
+): SimpleExpressionNode {
+  return {
+    type: NodeTypes.SIMPLE_EXPRESSION,
+    content,
+  };
+}
+
+export function createCompoundExpression(
+  children: CompoundExpressionNode["children"]
+): CompoundExpressionNode {
+  return {
+    type: NodeTypes.COMPOUND_EXPRESSION,
+
+    children,
   };
 }
