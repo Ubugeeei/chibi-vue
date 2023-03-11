@@ -1,7 +1,7 @@
-import { createApp, ref, computed, h } from "chibi-vue";
+import { createApp, ref, computed } from "chibi-vue";
 
 const app = createApp({
-  template: `<div class="my-class" v-on:click="changeMessage">{{ message }}</div>`,
+  template: `<div @click="changeMessage">{{ message }}</div>`,
 
   setup() {
     const count = ref(0);
