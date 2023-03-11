@@ -84,10 +84,11 @@ export function buildProps(
     const prop = props[i];
     if (prop.type === NodeTypes.ATTRIBUTE) {
       const { name, value } = prop;
+
       properties.push(
         createObjectProperty(
-          createSimpleExpression(name),
-          createSimpleExpression(value ? value.content : "")
+          createSimpleExpression(name, true),
+          createSimpleExpression(value ? value.content : "", true)
         )
       );
     } else {
