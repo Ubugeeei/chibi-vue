@@ -65,26 +65,11 @@ export interface ComponentInternalInstance {
   // [LifecycleHooks.CREATED]: LifecycleHook
   // [LifecycleHooks.BEFORE_MOUNT]: LifecycleHook
   // [LifecycleHooks.MOUNTED]: LifecycleHook
-  // [LifecycleHooks.BEFORE_UPDATE]: LifecycleHook
-  // [LifecycleHooks.UPDATED]: LifecycleHook
-  // [LifecycleHooks.BEFORE_UNMOUNT]: LifecycleHook
-  // [LifecycleHooks.UNMOUNTED]: LifecycleHook
-  // [LifecycleHooks.RENDER_TRACKED]: LifecycleHook
-  // [LifecycleHooks.RENDER_TRIGGERED]: LifecycleHook
-  // [LifecycleHooks.ACTIVATED]: LifecycleHook
-  // [LifecycleHooks.DEACTIVATED]: LifecycleHook
-  // [LifecycleHooks.ERROR_CAPTURED]: LifecycleHook
-  // [LifecycleHooks.SERVER_PREFETCH]: LifecycleHook<() => Promise<unknown>>
 }
 
 export type InternalRenderFunction = {
   (
     ctx: ComponentPublicInstance,
-
-    // TODO:
-    // for compiler-optimized bindings
-    // $props: ComponentInternalInstance["props"],
-    // $setup: ComponentInternalInstance["setupState"],
     $data: ComponentInternalInstance["data"],
     $options: ComponentInternalInstance["ctx"]
   ): VNodeChild;
@@ -141,7 +126,11 @@ export const setupComponent = (instance: ComponentInternalInstance) => {
   const { setup } = Component;
   if (setup) {
     const setupResult = setup();
-    handleSetupResult(instance, setupResult);
+    if (isFunction(setupResult)) {
+      instance.render = setupResult as InternalRenderFunction;
+    } else if (isObject(setupResult)) {
+      instance.setupState = proxyRefs(setupResult);
+    }
   }
 
   if (compile && !Component.render) {
@@ -155,20 +144,7 @@ export const setupComponent = (instance: ComponentInternalInstance) => {
   unsetCurrentInstance();
 };
 
-export function handleSetupResult(
-  instance: ComponentInternalInstance,
-  setupResult: unknown
-) {
-  if (isFunction(setupResult)) {
-    instance.render = setupResult as InternalRenderFunction;
-  } else if (isObject(setupResult)) {
-    // TODO: type
-    instance.setupState = proxyRefs(setupResult) as any;
-  }
-}
-
 type CompileFunction = (template: string | object) => InternalRenderFunction;
-
 let compile: CompileFunction | undefined;
 
 /**

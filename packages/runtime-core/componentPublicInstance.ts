@@ -1,5 +1,5 @@
 import { hasOwn } from "../shared";
-import { type ComponentInternalInstance } from "./component";
+import { Data, type ComponentInternalInstance } from "./component";
 import { type ComponentOptions } from "./componentOptions";
 
 export class ComponentPublicInstance {
@@ -16,10 +16,14 @@ export interface ComponentRenderContext {
   _: ComponentInternalInstance;
 }
 
+const hasSetupBinding = (state: Data, key: string) => hasOwn(state, key);
+
 export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
   get({ _: instance }: ComponentRenderContext, key: string) {
-    const { ctx, data } = instance;
-    if (hasOwn(data, key)) {
+    const { ctx, setupState, data } = instance;
+    if (hasSetupBinding(setupState, key)) {
+      return setupState[key];
+    } else if (hasOwn(data, key)) {
       return data[key];
     } else if (hasOwn(ctx, key)) {
       return ctx[key];
