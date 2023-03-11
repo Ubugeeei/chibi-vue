@@ -34,5 +34,7 @@ export function baseCompile(template: string | RootNode) {
   });
 
   // codegen
-  return generate(ast);
+  const code = generate(ast);
+
+  return code;
 }
