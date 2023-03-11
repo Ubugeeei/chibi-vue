@@ -251,6 +251,7 @@ function parseTag(context: ParserContext, type: TagType): ElementNode {
     tagType,
     props,
     children: [],
+    codegenNode: undefined, // to be created during transform phase
   };
 }
 
