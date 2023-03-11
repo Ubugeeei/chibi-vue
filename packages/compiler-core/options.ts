@@ -1,5 +1,6 @@
 import { ElementNode } from "./ast";
 import { TextModes } from "./parse";
+import { NodeTransform } from "./transform";
 
 export interface ParserOptions {
   /**
@@ -16,4 +17,11 @@ export interface ParserOptions {
     node: ElementNode,
     parent: ElementNode | undefined
   ) => TextModes;
+}
+
+export interface TransformOptions {
+  /**
+   * An array of node transforms to be applied to every AST node.
+   */
+  nodeTransforms?: NodeTransform[];
 }

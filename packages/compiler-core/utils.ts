@@ -1,4 +1,5 @@
 import { Position } from "./ast";
+import { CREATE_ELEMENT_VNODE, CREATE_VNODE } from "./runtimeHelpers";
 
 export function advancePositionWithMutation(
   pos: Position,
@@ -22,4 +23,8 @@ export function advancePositionWithMutation(
       : numberOfCharacters - lastNewLinePos;
 
   return pos;
+}
+
+export function getVNodeHelper(isComponent: boolean) {
+  return isComponent ? CREATE_VNODE : CREATE_ELEMENT_VNODE;
 }

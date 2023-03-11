@@ -1,3 +1,4 @@
+export const CREATE_VNODE = Symbol();
 export const CREATE_ELEMENT_VNODE = Symbol();
 export const WITH_DIRECTIVES = Symbol();
 export const TO_DISPLAY_STRING = Symbol();
