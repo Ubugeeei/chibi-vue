@@ -87,7 +87,10 @@ export function generate(ast: RootNode): CodegenResult {
 
   genFunctionPreamble(ast, context);
 
-  push(`function render() { `);
+  const args = ["_ctx"];
+  const signature = args.join(", ");
+
+  push(`function render(${signature}) { `);
   push(`return `);
   if (ast.children) {
     ast.children.forEach((codegenNode) => {
