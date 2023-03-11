@@ -155,6 +155,7 @@ function parseInterpolation(
     type: NodeTypes.INTERPOLATION,
     content: {
       type: NodeTypes.SIMPLE_EXPRESSION,
+      isStatic: false,
       content,
     },
   };
@@ -319,6 +320,7 @@ function parseAttribute(
       arg = {
         type: NodeTypes.SIMPLE_EXPRESSION,
         content,
+        isStatic: true,
       };
     }
 
@@ -328,6 +330,7 @@ function parseAttribute(
       exp: value && {
         type: NodeTypes.SIMPLE_EXPRESSION,
         content: value.content,
+        isStatic: false,
       },
       arg,
     };
