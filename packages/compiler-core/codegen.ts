@@ -16,9 +16,13 @@ import {
 } from "./ast";
 import {
   CREATE_ELEMENT_VNODE,
+  CREATE_VNODE,
   TO_DISPLAY_STRING,
+  TO_HANDLER_KEY,
   helperNameMap,
 } from "./runtimeHelpers";
+
+const aliasHelper = (s: symbol) => `${helperNameMap[s]}: _${helperNameMap[s]}`;
 
 export interface CodegenResult {
   code: string;
@@ -33,6 +37,7 @@ export interface CodegenContext {
   column: number;
   offset: number;
   indentLevel: number;
+  runtimeGlobalName: string;
   helper(key: symbol): string;
   push(code: string, node?: CodegenNode): void;
   indent(): void;
@@ -42,11 +47,12 @@ export interface CodegenContext {
 
 function createCodegenContext(): CodegenContext {
   const context: CodegenContext = {
-    code: `return `,
+    code: ``,
     column: 1,
     line: 1,
     offset: 0,
     indentLevel: 0,
+    runtimeGlobalName: `Vue`,
     helper(key) {
       return `_${helperNameMap[key]}`;
     },
@@ -79,6 +85,8 @@ export function generate(ast: RootNode): CodegenResult {
   const context = createCodegenContext();
   const { push } = context;
 
+  genFunctionPreamble(ast, context);
+
   push(`function render() { `);
   push(`return `);
   if (ast.children) {
@@ -92,6 +100,25 @@ export function generate(ast: RootNode): CodegenResult {
     ast,
     code: context.code,
   };
+}
+
+function genFunctionPreamble(ast: RootNode, context: CodegenContext) {
+  const { push, newline, runtimeGlobalName } = context;
+
+  push(`const _Vue = ${runtimeGlobalName}\n`);
+
+  const staticHelpers = [
+    CREATE_VNODE,
+    CREATE_ELEMENT_VNODE,
+    TO_HANDLER_KEY,
+    TO_DISPLAY_STRING,
+  ]
+    .map(aliasHelper)
+    .join(", ");
+  push(`const { ${staticHelpers} } = _Vue\n`);
+
+  newline();
+  push(`return `);
 }
 
 function genNode(node: CodegenNode | symbol | string, context: CodegenContext) {
