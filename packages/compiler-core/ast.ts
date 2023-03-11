@@ -1,3 +1,5 @@
+import { PropsExpression } from "./transforms/transformElement";
+
 export const enum NodeTypes {
   ROOT,
   ELEMENT,
@@ -7,6 +9,13 @@ export const enum NodeTypes {
 
   ATTRIBUTE,
   DIRECTIVE,
+
+  // codegen
+  VNODE_CALL,
+  JS_CALL_EXPRESSION,
+  JS_OBJECT_EXPRESSION,
+  JS_PROPERTY,
+  JS_ARRAY_EXPRESSION,
 }
 
 export const enum ElementTypes {
@@ -32,9 +41,51 @@ export type ExpressionNode = SimpleExpressionNode;
 
 export type TemplateChildNode = ElementNode | TextNode | InterpolationNode;
 
+export interface VNodeCall extends Node {
+  type: NodeTypes.VNODE_CALL;
+  tag: string | CallExpression;
+  props: PropsExpression | undefined;
+  children:
+    | TemplateChildNode[] // multiple children
+    | SimpleExpressionNode // hoisted
+    | undefined;
+  directives: DirectiveArguments | undefined;
+  isComponent: boolean;
+}
+
+// JS Node Types ---------------------------------------------------------------
+
+// We also include a number of JavaScript AST nodes for code generation.
+// The AST is an intentionally minimal subset just to meet the exact needs of
+// Vue render function generation.
+
+export type JSChildNode =
+  | VNodeCall
+  | CallExpression
+  | ObjectExpression
+  | ArrayExpression
+  | ExpressionNode;
+
+export interface CallExpression extends Node {
+  type: NodeTypes.JS_CALL_EXPRESSION;
+  callee: string | symbol;
+  arguments: (string | JSChildNode | TemplateChildNode | TemplateChildNode[])[];
+}
+
+export interface ObjectExpression extends Node {
+  type: NodeTypes.JS_OBJECT_EXPRESSION;
+  properties: Array<Property>;
+}
+export interface Property extends Node {
+  type: NodeTypes.JS_PROPERTY;
+  key: ExpressionNode;
+  value: JSChildNode;
+}
+
 export interface RootNode extends Node {
   type: NodeTypes.ROOT;
   children: TemplateChildNode[];
+  codegenNode: TemplateChildNode | undefined;
 }
 
 export type ElementNode = PlainElementNode | ComponentNode | TemplateNode;
@@ -49,10 +100,13 @@ export interface BaseElementNode extends Node {
 
 export interface PlainElementNode extends BaseElementNode {
   tagType: ElementTypes.ELEMENT;
+  codegenNode: VNodeCall | SimpleExpressionNode | undefined;
 }
 
 export interface TemplateNode extends BaseElementNode {
   tagType: ElementTypes.TEMPLATE;
+  // TemplateNode is a container type that always gets compiled away
+  codegenNode: undefined;
 }
 
 export interface TextNode extends Node {
@@ -67,6 +121,7 @@ export interface InterpolationNode extends Node {
 
 export interface ComponentNode extends BaseElementNode {
   tagType: ElementTypes.COMPONENT;
+  codegenNode: VNodeCall | undefined;
 }
 
 export interface SimpleExpressionNode extends Node {
@@ -87,11 +142,31 @@ export interface DirectiveNode extends Node {
   arg: ExpressionNode | undefined;
 }
 
+export interface ArrayExpression extends Node {
+  type: NodeTypes.JS_ARRAY_EXPRESSION;
+  elements: Array<string | Node>;
+}
+
+// Codegen Node Types ----------------------------------------------------------
+
+export interface DirectiveArguments extends ArrayExpression {
+  elements: DirectiveArgumentNode[];
+}
+
+export interface DirectiveArgumentNode extends ArrayExpression {
+  elements: // dir, exp, arg, modifiers
+  | [string]
+    | [string, ExpressionNode]
+    | [string, ExpressionNode, ExpressionNode]
+    | [string, ExpressionNode, ExpressionNode, ObjectExpression];
+}
+
 // AST Utilities ---------------------------------------------------------------
 
 export function createRoot(children: TemplateChildNode[]): RootNode {
   return {
     type: NodeTypes.ROOT,
     children,
+    codegenNode: undefined,
   };
 }
