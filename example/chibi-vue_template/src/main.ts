@@ -1,26 +1,18 @@
-// @ts-nocheck
-import { createApp } from "chibi-vue";
+import { createApp, ref, computed, h } from "chibi-vue";
 
 const app = createApp({
-  data() {
-    return {
-      message: "Hello chibi-vue!",
-      count: 0,
+  template: `<div class="my-class" v-on:click="changeMessage">{{ message }}</div>`,
+
+  setup() {
+    const count = ref(0);
+    const countDouble = computed(() => count.value * 2);
+    const message = ref("Hello chibi-vue!");
+    const changeMessage = () => {
+      count.value++;
+      message.value = `Hello chibi-vue! ${count.value} * 2 = ${countDouble.value}`;
     };
+    return { message, changeMessage };
   },
-  methods: {
-    changeMessage() {
-      this.count++;
-      this.message = `Hello chibi-vue! ${this.count} * 2 = ${this.countDouble}`;
-    },
-  },
-  computed: {
-    countDouble() {
-      return this.count * 2;
-    },
-  },
-  template:
-    '<div class="my-class" v-on:click="changeMessage">{{ message }}</div>',
 });
 
 app.mount("#app");
