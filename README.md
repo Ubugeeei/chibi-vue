@@ -26,7 +26,7 @@ Currently, I am still in the process of implementation, but after implementation
 - ✅ API
   - ✅ Options API
   - ✅ Composition API
-- ⚠️ template compiler
+- ✅ template compiler
   - ✅ directives
     - ✅ v-on
   - ✅ mustache
