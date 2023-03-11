@@ -1,7 +1,4 @@
 import {
-  ArrayExpression,
-  ComponentNode,
-  DirectiveArguments,
   DirectiveNode,
   ElementNode,
   ElementTypes,
@@ -9,7 +6,9 @@ import {
   ObjectExpression,
   TemplateTextChildNode,
   VNodeCall,
-  createArrayExpression,
+  createObjectExpression,
+  createObjectProperty,
+  createSimpleExpression,
   createVNodeCall,
 } from "../ast";
 import { NodeTransform, TransformContext } from "../transform";
@@ -32,30 +31,15 @@ export const transformElement: NodeTransform = (node, context) => {
 
     const { tag, props } = node;
     const isComponent = node.tagType === ElementTypes.COMPONENT;
-    let vnodeTag = isComponent
-      ? resolveComponentType(node as ComponentNode, context)
-      : `"${tag}"`;
 
+    let vnodeTag = `"${tag}"`;
     let vnodeProps: VNodeCall["props"];
     let vnodeChildren: VNodeCall["children"];
-    let vnodeDirectives: VNodeCall["directives"];
 
     // props
     if (props.length > 0) {
-      const propsBuildResult = buildProps(
-        node,
-        context,
-        undefined,
-        isComponent
-      );
+      const propsBuildResult = buildProps(node, context);
       vnodeProps = propsBuildResult.props;
-      const directives = propsBuildResult.directives;
-      vnodeDirectives =
-        directives && directives.length
-          ? (createArrayExpression(
-              directives.map((dir) => buildDirectiveArgs(dir, context))
-            ) as DirectiveArguments)
-          : undefined;
     }
 
     // children
@@ -83,31 +67,48 @@ export const transformElement: NodeTransform = (node, context) => {
       vnodeTag,
       vnodeProps,
       vnodeChildren,
-      vnodeDirectives,
       isComponent
     );
   };
 };
 
-export function resolveComponentType(
-  node: ComponentNode,
-  context: TransformContext
-) {
-  // TODO: implement
-}
-
 export function buildProps(
   node: ElementNode,
-  context: TransformContext,
-  props: ElementNode["props"] = node.props,
-  isComponent: boolean
-): { props: PropsExpression | undefined; directives: DirectiveNode[] } {
-  // TODO: implement
-}
-
-export function buildDirectiveArgs(
-  dir: DirectiveNode,
   context: TransformContext
-): ArrayExpression {
-  // TODO: implement
+): { props: PropsExpression | undefined; directives: DirectiveNode[] } {
+  const { props } = node;
+  let properties: ObjectExpression["properties"] = [];
+  const runtimeDirectives: DirectiveNode[] = [];
+
+  for (let i = 0; i < props.length; i++) {
+    const prop = props[i];
+    if (prop.type === NodeTypes.ATTRIBUTE) {
+      const { name, value } = prop;
+      properties.push(
+        createObjectProperty(
+          createSimpleExpression(name),
+          createSimpleExpression(value ? value.content : "")
+        )
+      );
+    } else {
+      // directives
+      const { name } = prop;
+      const directiveTransform = context.directiveTransforms[name];
+      if (directiveTransform) {
+        // has built-in directive transform.
+        const { props } = directiveTransform(prop, node, context);
+        properties.push(...props);
+      }
+    }
+  }
+
+  let propsExpression: PropsExpression | undefined = undefined;
+  if (properties.length) {
+    propsExpression = createObjectExpression(properties);
+  }
+
+  return {
+    props: propsExpression,
+    directives: runtimeDirectives,
+  };
 }

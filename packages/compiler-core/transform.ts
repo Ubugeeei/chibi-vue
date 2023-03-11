@@ -9,7 +9,7 @@ import {
   Property,
 } from "./ast";
 import { TransformOptions } from "./options";
-import { TO_DISPLAY_STRING } from "./runtimeHelpers";
+import { TO_DISPLAY_STRING, helperNameMap } from "./runtimeHelpers";
 
 export type NodeTransform = (
   node: RootNode | TemplateChildNode,
@@ -31,6 +31,7 @@ export interface TransformContext extends Required<TransformOptions> {
   helpers: Map<symbol, number>;
   currentNode: RootNode | TemplateChildNode | null;
   helper<T extends symbol>(name: T): T;
+  helperString(name: symbol): string;
 }
 
 export function createTransformContext(
@@ -46,6 +47,9 @@ export function createTransformContext(
       const count = context.helpers.get(name) || 0;
       context.helpers.set(name, count + 1);
       return name;
+    },
+    helperString(name) {
+      return `_${helperNameMap[context.helper(name)]}`;
     },
   };
 

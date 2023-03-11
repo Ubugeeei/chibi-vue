@@ -1,5 +1,4 @@
 import { isString } from "../shared";
-import { WITH_DIRECTIVES } from "./runtimeHelpers";
 import { TransformContext } from "./transform";
 import { PropsExpression } from "./transforms/transformElement";
 import { getVNodeHelper } from "./utils";
@@ -56,7 +55,6 @@ export interface VNodeCall extends Node {
     | TemplateTextChildNode
     | SimpleExpressionNode // hoisted
     | undefined;
-  directives: DirectiveArguments | undefined;
   isComponent: boolean;
 }
 
@@ -202,14 +200,10 @@ export function createVNodeCall(
   tag: VNodeCall["tag"],
   props?: VNodeCall["props"],
   children?: VNodeCall["children"],
-  directives?: VNodeCall["directives"],
   isComponent: VNodeCall["isComponent"] = false
 ): VNodeCall {
   if (context) {
     context.helper(getVNodeHelper(isComponent));
-    if (directives) {
-      context.helper(WITH_DIRECTIVES);
-    }
   }
 
   return {
@@ -217,7 +211,6 @@ export function createVNodeCall(
     tag,
     props,
     children,
-    directives,
     isComponent,
   };
 }

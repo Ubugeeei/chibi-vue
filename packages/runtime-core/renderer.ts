@@ -120,8 +120,6 @@ export function createRenderer(options: RendererOptions) {
   } = options;
 
   const patch: PatchFn = (n1, n2, container, anchor) => {
-    console.log(n2);
-
     const { type, shapeFlag } = n2;
     if (type === Text) {
       processText(n1, n2, container, anchor);
