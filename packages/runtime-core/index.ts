@@ -1,5 +1,36 @@
-export { type CreateAppFunction } from "./apiCreateApp";
+// Core API ------------------------------------------------------------------
+
+export {
+  // core
+  reactive,
+  ref,
+  // utilities
+  unref,
+  proxyRefs,
+  isRef,
+  isReactive,
+  // effect
+  ReactiveEffect,
+  // effect scope
+  EffectScope,
+} from "../reactivity";
+export type { Ref, ReactiveFlags, ComputedRef } from "../reactivity";
+
+export { computed } from "./apiComputed";
+
+export { h } from "./h";
+
+export {
+  type VNode,
+  type VNodeProps as VNodeData,
+  createTextVNode,
+  createVNode,
+  createElementVNode,
+} from "./vnode";
+
 export { type RendererOptions, createRenderer } from "./renderer";
+
+export { type CreateAppFunction } from "./apiCreateApp";
 
 export {
   type ComponentInternalInstance,
@@ -8,10 +39,4 @@ export {
 export { type ComponentOptions, type RenderFunction } from "./componentOptions";
 export { type ComponentPublicInstance } from "./componentPublicInstance";
 
-export {
-  type VNode,
-  type VNodeProps as VNodeData,
-  createTextVNode,
-  createVNode,
-} from "./vnode";
-export { h } from "./h";
+export { capitalize, toHandlerKey, toDisplayString } from "../shared";
