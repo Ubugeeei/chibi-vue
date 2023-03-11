@@ -42,7 +42,7 @@ export interface CodegenContext {
 
 function createCodegenContext(): CodegenContext {
   const context: CodegenContext = {
-    code: ``,
+    code: `return `,
     column: 1,
     line: 1,
     offset: 0,
