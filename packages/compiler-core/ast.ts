@@ -43,6 +43,7 @@ export type ExpressionNode = SimpleExpressionNode;
 // | CompoundExpressionNode
 
 export type TemplateChildNode = ElementNode | TextNode | InterpolationNode;
+export type TemplateTextChildNode = TextNode | InterpolationNode;
 
 export interface VNodeCall extends Node {
   type: NodeTypes.VNODE_CALL;
@@ -50,6 +51,7 @@ export interface VNodeCall extends Node {
   props: PropsExpression | undefined;
   children:
     | TemplateChildNode[] // multiple children
+    | TemplateTextChildNode
     | SimpleExpressionNode // hoisted
     | undefined;
   directives: DirectiveArguments | undefined;
@@ -196,5 +198,14 @@ export function createVNodeCall(
     children,
     directives,
     isComponent,
+  };
+}
+
+export function createArrayExpression(
+  elements: ArrayExpression["elements"]
+): ArrayExpression {
+  return {
+    type: NodeTypes.JS_ARRAY_EXPRESSION,
+    elements,
   };
 }
