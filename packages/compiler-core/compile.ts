@@ -7,6 +7,7 @@ import { DirectiveTransform, NodeTransform, transform } from "./transform";
 import { transformElement } from "./transforms/transformElement";
 import { transformOn } from "./transforms/vOn";
 import { transformText } from "./transforms/transformText";
+import { transformExpression } from "./transforms/transformExpression";
 
 export type TransformPreset = [
   NodeTransform[],
@@ -15,7 +16,7 @@ export type TransformPreset = [
 
 export function getBaseTransformPreset(): TransformPreset {
   return [
-    [transformElement, transformText],
+    [transformExpression, transformElement, transformText],
     {
       on: transformOn,
     },
