@@ -105,7 +105,7 @@ export interface BaseElementNode extends Node {
 
 export interface PlainElementNode extends BaseElementNode {
   tagType: ElementTypes.ELEMENT;
-  codegenNode: (VNodeCall | SimpleExpressionNode)[] | undefined;
+  codegenNode: VNodeCall | SimpleExpressionNode | undefined;
 }
 
 export interface TemplateNode extends BaseElementNode {
@@ -132,6 +132,7 @@ export interface ComponentNode extends BaseElementNode {
 export interface SimpleExpressionNode extends Node {
   type: NodeTypes.SIMPLE_EXPRESSION;
   content: string;
+  isStatic: boolean;
 }
 
 export interface CompoundExpressionNode extends Node {
@@ -245,10 +246,12 @@ export function createObjectProperty(
 }
 
 export function createSimpleExpression(
-  content: SimpleExpressionNode["content"]
+  content: SimpleExpressionNode["content"],
+  isStatic: SimpleExpressionNode["isStatic"] = false
 ): SimpleExpressionNode {
   return {
     type: NodeTypes.SIMPLE_EXPRESSION,
+    isStatic,
     content,
   };
 }
