@@ -74,8 +74,18 @@ const shallowUnwrapHandlers: ProxyHandler<any> = {
   },
 };
 
-export function proxyRefs<T extends object>(objectWithRefs: T): Ref<T> {
+export function proxyRefs<T extends object>(objectWithRefs: T): ShallowUnwrapRef<T> {
   return isReactive(objectWithRefs)
     ? objectWithRefs
     : new Proxy(objectWithRefs, shallowUnwrapHandlers);
 }
+
+export type ShallowUnwrapRef<T> = {
+  [K in keyof T]: T[K] extends Ref<infer V>
+    ? V // if `V` is `unknown` that means it does not extend `Ref` and is undefined
+    : T[K] extends Ref<infer V> | undefined
+    ? unknown extends V
+      ? undefined
+      : V | undefined
+    : T[K];
+};
