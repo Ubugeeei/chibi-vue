@@ -1,17 +1,31 @@
 import { isArray, isString } from "../shared";
-import { ParentNode, NodeTypes, RootNode, TemplateChildNode } from "./ast";
+import {
+  ParentNode,
+  NodeTypes,
+  RootNode,
+  TemplateChildNode,
+  DirectiveNode,
+  ElementNode,
+  Property,
+} from "./ast";
 import { TransformOptions } from "./options";
 import { TO_DISPLAY_STRING } from "./runtimeHelpers";
 
-// There are two types of transforms:
-//
-// - NodeTransform:
-//   Transforms that operate directly on a ChildNode. NodeTransforms may mutate,
-//   replace or remove the node being processed.
 export type NodeTransform = (
   node: RootNode | TemplateChildNode,
   context: TransformContext
 ) => void | (() => void) | (() => void)[];
+
+export type DirectiveTransform = (
+  dir: DirectiveNode,
+  node: ElementNode,
+  context: TransformContext,
+  augmentor?: (ret: DirectiveTransformResult) => DirectiveTransformResult
+) => DirectiveTransformResult;
+
+export interface DirectiveTransformResult {
+  props: Property[];
+}
 
 export interface TransformContext extends Required<TransformOptions> {
   helpers: Map<symbol, number>;
@@ -21,12 +35,13 @@ export interface TransformContext extends Required<TransformOptions> {
 
 export function createTransformContext(
   root: RootNode,
-  { nodeTransforms = [] }: TransformOptions
+  { nodeTransforms = [], directiveTransforms = {} }: TransformOptions
 ): TransformContext {
   const context: TransformContext = {
     helpers: new Map(),
     currentNode: root,
     nodeTransforms,
+    directiveTransforms,
     helper(name) {
       const count = context.helpers.get(name) || 0;
       context.helpers.set(name, count + 1);
