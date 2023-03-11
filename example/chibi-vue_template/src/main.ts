@@ -19,7 +19,8 @@ const app = createApp({
       return this.count * 2;
     },
   },
-  template: '<div v-on:click="changeMessage">{{ message }}</div>',
+  template:
+    '<div class="my-class" v-on:click="changeMessage">{{ message }}</div>',
 });
 
 app.mount("#app");
