@@ -110,7 +110,6 @@ function genNode(node: CodegenNode | symbol | string, context: CodegenContext) {
       genNode(node.codegenNode!, context);
       break;
     }
-
     case NodeTypes.TEXT:
       genText(node, context);
       break;
