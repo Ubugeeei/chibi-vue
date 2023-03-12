@@ -24,3 +24,29 @@ function createSetter() {
 }
 
 export const mutableHandlers: ProxyHandler<object> = { get, set };
+
+/**
+ *
+ * ----------- tests
+ *
+ */
+if (import.meta.vitest) {
+  const { it, expect, vi } = import.meta.vitest;
+
+  it("test mutableHandlers: should track and trigger", async () => {
+    const { ReactiveEffect } = await import("./effect");
+    const mockEffect = vi.fn(() => {});
+    const effect = new ReactiveEffect(mockEffect);
+
+    effect.run(); // call count 1
+
+    expect(mockEffect).toHaveBeenCalledTimes(1);
+
+    const proxy = new Proxy<{ foo: string }>({ foo: "abc" }, mutableHandlers);
+
+    const _ = proxy.foo; // should be tracked
+    proxy.foo = "def"; // should be triggered (call count 2)
+
+    expect(mockEffect).toHaveBeenCalledTimes(2);
+  });
+}
