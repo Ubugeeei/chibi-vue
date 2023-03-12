@@ -7,6 +7,7 @@ export default defineConfig({
       "./packages/reactivity/*.ts",
       "./packages/shared/*.ts",
       "./packages/runtime-core/vnode.ts",
+      "./packages/runtime-core/h.ts",
     ],
     exclude: [
       "./packages/reactivity/index.ts",
