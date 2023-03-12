@@ -17,10 +17,12 @@
     "types": [
       "vitest/importMeta",
     ],
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "allowJs": true,
   },
   "include": [
     "packages/**/*.ts",
+    "vite-plugin/**/*.ts",
     "example/**/**.ts"
   ],
   "exclude": [
