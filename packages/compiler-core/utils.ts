@@ -104,6 +104,14 @@ export function advancePositionWithMutation(
   return pos;
 }
 
+export function advancePositionWithClone(
+  pos: Position,
+  source: string,
+  numberOfCharacters: number = source.length
+): Position {
+  return advancePositionWithMutation({ ...pos }, source, numberOfCharacters);
+}
+
 export function getVNodeHelper(isComponent: boolean) {
   return isComponent ? CREATE_VNODE : CREATE_ELEMENT_VNODE;
 }

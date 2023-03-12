@@ -44,10 +44,7 @@ export interface SFCParseResult {
 
 export function parse(
   source: string,
-  {
-    filename = DEFAULT_FILENAME,
-    compiler = CompilerDOM,
-  }: SFCParseOptions = {}
+  { filename = DEFAULT_FILENAME, compiler = CompilerDOM }: SFCParseOptions = {}
 ): SFCParseResult {
   const descriptor: SFCDescriptor = {
     filename,
@@ -81,6 +78,8 @@ export function parse(
 function createBlock(node: ElementNode, source: string): SFCBlock {
   const type = node.tag;
   let { start, end } = node.loc;
+  start = node.children[0].loc.start;
+  end = node.children[node.children.length - 1].loc.end;
   const content = source.slice(start.offset, end.offset);
   return { type, content };
 }

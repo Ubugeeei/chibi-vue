@@ -9,16 +9,18 @@ import {
   NodeTypes,
   Position,
   RootNode,
+  SourceLocation,
   TemplateChildNode,
   TextNode,
   createRoot,
 } from "./ast";
 import { ParserOptions } from "./options";
-import { advancePositionWithMutation } from "./utils";
+import { advancePositionWithClone, advancePositionWithMutation } from "./utils";
 
 type AttributeValue =
   | {
       content: string;
+      loc: SourceLocation;
     }
   | undefined;
 
@@ -135,6 +137,7 @@ function parseInterpolation(
   const closeIndex = context.source.indexOf(close, open.length);
   if (closeIndex === -1) return undefined;
 
+  const start = getCursor(context);
   advanceBy(context, open.length);
   const innerStart = getCursor(context);
   const innerEnd = getCursor(context);
@@ -157,7 +160,9 @@ function parseInterpolation(
       type: NodeTypes.SIMPLE_EXPRESSION,
       isStatic: false,
       content,
+      loc: getSelection(context, innerStart, innerEnd),
     },
+    loc: getSelection(context, start),
   };
 }
 
@@ -172,11 +177,13 @@ function parseText(context: ParserContext, mode: TextModes): TextNode {
     }
   }
 
+  const start = getCursor(context);
   const content = parseTextData(context, endIndex, mode);
 
   return {
     type: NodeTypes.TEXT,
     content,
+    loc: getSelection(context, start),
   };
 }
 
@@ -211,6 +218,7 @@ const enum TagType {
 
 function parseTag(context: ParserContext, type: TagType): ElementNode {
   // Tag open.
+  const start = getCursor(context);
   const match = /^<\/?([a-z][^\t\r\n\f />]*)/i.exec(context.source)!;
   const tag = match[1];
 
@@ -239,6 +247,7 @@ function parseTag(context: ParserContext, type: TagType): ElementNode {
     props,
     children: [],
     codegenNode: undefined, // to be created during transform phase
+    loc: getSelection(context, start),
   };
 }
 
@@ -279,6 +288,7 @@ function parseAttribute(
   nameSet: Set<string>
 ): AttributeNode | DirectiveNode {
   // Name.
+  const start = getCursor(context);
   const match = /^[^\t\r\n\f />][^\t\r\n\f />=]*/.exec(context.source)!;
   const name = match[0];
 
@@ -297,6 +307,7 @@ function parseAttribute(
   }
 
   // directive
+  const loc = getSelection(context, start);
   if (/^(v-[A-Za-z0-9-]|:|\.|@|#)/.test(name)) {
     const match =
       /(?:^v-([a-z0-9-]+))?(?:(?::|^\.|^@|^#)(\[[^\]]+\]|[^\.]+))?(.+)?$/i.exec(
@@ -316,11 +327,18 @@ function parseAttribute(
     let arg: ExpressionNode | undefined;
 
     if (match[2]) {
+      const startOffset = name.lastIndexOf(match[2]);
+      const loc = getSelection(
+        context,
+        getNewPosition(context, start, startOffset),
+        getNewPosition(context, start, startOffset + match[2].length)
+      );
       let content = match[2];
       arg = {
         type: NodeTypes.SIMPLE_EXPRESSION,
         content,
         isStatic: true,
+        loc,
       };
     }
 
@@ -331,7 +349,9 @@ function parseAttribute(
         type: NodeTypes.SIMPLE_EXPRESSION,
         content: value.content,
         isStatic: false,
+        loc: value.loc,
       },
+      loc,
       arg,
     };
   }
@@ -342,11 +362,14 @@ function parseAttribute(
     value: value && {
       type: NodeTypes.TEXT,
       content: value.content,
+      loc: value.loc,
     },
+    loc,
   };
 }
 
 function parseAttributeValue(context: ParserContext): AttributeValue {
+  const start = getCursor(context);
   let content: string;
 
   const quote = context.source[0];
@@ -379,7 +402,7 @@ function parseAttributeValue(context: ParserContext): AttributeValue {
     );
   }
 
-  return { content };
+  return { content, loc: getSelection(context, start) };
 }
 
 function advanceBy(context: ParserContext, numberOfCharacters: number): void {
@@ -466,6 +489,31 @@ function parseTextData(
 function getCursor(context: ParserContext): Position {
   const { column, line, offset } = context;
   return { column, line, offset };
+}
+
+function getSelection(
+  context: ParserContext,
+  start: Position,
+  end?: Position
+): SourceLocation {
+  end = end || getCursor(context);
+  return {
+    start,
+    end,
+    source: context.originalSource.slice(start.offset, end.offset),
+  };
+}
+
+function getNewPosition(
+  context: ParserContext,
+  start: Position,
+  numberOfCharacters: number
+): Position {
+  return advancePositionWithClone(
+    start,
+    context.originalSource.slice(start.offset, numberOfCharacters),
+    numberOfCharacters
+  );
 }
 
 function last<T>(xs: T[]): T | undefined {

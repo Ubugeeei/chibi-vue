@@ -29,8 +29,15 @@ export const enum ElementTypes {
   TEMPLATE,
 }
 
+export interface SourceLocation {
+  start: Position;
+  end: Position;
+  source: string;
+}
+
 export interface Node {
   type: NodeTypes;
+  loc: SourceLocation;
 }
 
 export interface Position {
@@ -189,12 +196,22 @@ export interface DirectiveArgumentNode extends ArrayExpression {
 
 // AST Utilities ---------------------------------------------------------------
 
-export function createRoot(children: TemplateChildNode[]): RootNode {
+export const locStub: SourceLocation = {
+  source: "",
+  start: { line: 1, column: 1, offset: 0 },
+  end: { line: 1, column: 1, offset: 0 },
+};
+
+export function createRoot(
+  children: TemplateChildNode[],
+  loc: SourceLocation = locStub
+): RootNode {
   return {
     type: NodeTypes.ROOT,
     children,
     helpers: new Set(),
     codegenNode: undefined,
+    loc,
   };
 }
 
@@ -203,7 +220,8 @@ export function createVNodeCall(
   tag: VNodeCall["tag"],
   props?: VNodeCall["props"],
   children?: VNodeCall["children"],
-  isComponent: VNodeCall["isComponent"] = false
+  isComponent: VNodeCall["isComponent"] = false,
+  loc: SourceLocation = locStub
 ): VNodeCall {
   if (context) {
     context.helper(getVNodeHelper(isComponent));
@@ -215,55 +233,65 @@ export function createVNodeCall(
     props,
     children,
     isComponent,
+    loc,
   };
 }
 
 export function createArrayExpression(
-  elements: ArrayExpression["elements"]
+  elements: ArrayExpression["elements"],
+  loc: SourceLocation = locStub
 ): ArrayExpression {
   return {
     type: NodeTypes.JS_ARRAY_EXPRESSION,
     elements,
+    loc,
   };
 }
 
 export function createObjectExpression(
-  properties: ObjectExpression["properties"]
+  properties: ObjectExpression["properties"],
+  loc: SourceLocation = locStub
 ): ObjectExpression {
   return {
     type: NodeTypes.JS_OBJECT_EXPRESSION,
     properties,
+    loc,
   };
 }
 
 export function createObjectProperty(
   key: Property["key"] | string,
-  value: Property["value"]
+  value: Property["value"],
+  loc: SourceLocation = locStub
 ): Property {
   return {
     type: NodeTypes.JS_PROPERTY,
     key: isString(key) ? createSimpleExpression(key) : key,
     value,
+    loc,
   };
 }
 
 export function createSimpleExpression(
   content: SimpleExpressionNode["content"],
-  isStatic: SimpleExpressionNode["isStatic"] = false
+  isStatic: SimpleExpressionNode["isStatic"] = false,
+  loc: SourceLocation = locStub
 ): SimpleExpressionNode {
   return {
     type: NodeTypes.SIMPLE_EXPRESSION,
     isStatic,
     content,
+    loc,
   };
 }
 
 export function createCompoundExpression(
-  children: CompoundExpressionNode["children"]
+  children: CompoundExpressionNode["children"],
+  loc: SourceLocation = locStub
 ): CompoundExpressionNode {
   return {
     type: NodeTypes.COMPOUND_EXPRESSION,
-
     children,
+    loc,
   };
 }
