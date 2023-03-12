@@ -89,3 +89,56 @@ export type ShallowUnwrapRef<T> = {
       : V | undefined
     : T[K];
 };
+
+/**
+ *
+ * ----------- tests
+ *
+ */
+if (import.meta.vitest) {
+  const { it, expect, vi } = import.meta.vitest;
+
+  it("isRef", () => {
+    expect(isRef(ref(1))).toBe(true);
+    expect(isRef(1)).toBe(false);
+  });
+
+  it("test ref: should track and trigger", async () => {
+    const { ReactiveEffect } = await import("./effect");
+    const mockEffect = vi.fn(() => {});
+    const effect = new ReactiveEffect(mockEffect);
+
+    effect.run(); // call count 1
+
+    expect(mockEffect).toHaveBeenCalledTimes(1);
+
+    const state = ref(1);
+
+    const _ = state.value; // should be tracked
+    state.value = 2; // should be triggered (call count 2)
+
+    expect(mockEffect).toHaveBeenCalledTimes(2);
+  });
+
+  it("test ref: should trackRefValue and triggerRefValue", async () => {
+    const { ReactiveEffect } = await import("./effect");
+    const mockEffect = vi.fn(() => {});
+    const effect = new ReactiveEffect(mockEffect);
+
+    effect.run(); // call count 1
+
+    expect(mockEffect).toHaveBeenCalledTimes(1);
+
+    const state = ref(1);
+
+    trackRefValue(state);
+    triggerRefValue(state); // should be triggered (call count 2)
+
+    expect(mockEffect).toHaveBeenCalledTimes(2);
+  });
+
+  it("test ref: should unref", () => {
+    expect(unref(ref(1))).toBe(1);
+    expect(unref(1)).toBe(1);
+  });
+}
