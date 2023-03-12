@@ -1,10 +1,8 @@
 import {
   isArray,
   isFunction,
-  isMap,
   isObject,
   isPlainObject,
-  isSet,
   isString,
   objectToString,
 } from ".";
@@ -25,19 +23,35 @@ const replacer = (_key: string, val: any): any => {
   // can't use isRef here since @vue/shared has no deps
   if (val && val.__v_isRef) {
     return replacer(_key, val.value);
-  } else if (isMap(val)) {
-    return {
-      [`Map(${val.size})`]: [...val.entries()].reduce((entries, [key, val]) => {
-        (entries as any)[`${key} =>`] = val;
-        return entries;
-      }, {}),
-    };
-  } else if (isSet(val)) {
-    return {
-      [`Set(${val.size})`]: [...val.values()],
-    };
   } else if (isObject(val) && !isArray(val) && !isPlainObject(val)) {
     return String(val);
   }
   return val;
 };
+
+/**
+ *
+ * ----------- tests
+ *
+ */
+if (import.meta.vitest) {
+  const { it, expect } = import.meta.vitest;
+  it("unit test: toDisplayString primitive", () => {
+    expect(toDisplayString("foo")).toBe("foo");
+    expect(toDisplayString(null)).toBe("");
+    expect(toDisplayString(1)).toBe("1");
+  });
+  it("unit test: toDisplayString object", () => {
+    expect(toDisplayString({ a: 1 })).toBe('{\n\x20\x20"a":\x201\n}');
+  });
+  it("unit test: toDisplayString array", () => {
+    expect(toDisplayString([1, 2, 3])).toBe(
+      "[\n\x20\x201,\n\x20\x202,\n\x20\x203\n]"
+    );
+  });
+  it("unit test: toDisplayString ref", async () => {
+    const { ref } = await import("../reactivity");
+    expect(toDisplayString(ref(1))).toBe("1");
+    expect(toDisplayString(ref({ a: 1 }))).toBe('{\n\x20\x20"a":\x201\n}');
+  });
+}

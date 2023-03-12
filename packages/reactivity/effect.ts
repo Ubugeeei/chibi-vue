@@ -36,8 +36,10 @@ export function track(target: object, key: unknown) {
 }
 
 export function trackEffects(dep: Dep) {
-  dep.add(activeEffect!);
-  activeEffect!.deps.push(dep);
+  if (activeEffect) {
+    dep.add(activeEffect);
+    activeEffect.deps.push(dep);
+  }
 }
 
 export function trigger(target: object, key?: unknown) {
