@@ -61,6 +61,7 @@ function createBaseVNode(
   shapeFlag: ShapeFlags | 0 = ShapeFlags.ELEMENT
 ): VNode {
   const vnode = {
+    __v_isVNode: true,
     type,
     props,
     children,
@@ -127,4 +128,124 @@ export function cloneVNode<T>(vnode: VNode<T>): VNode<T> {
     ctx: vnode.ctx,
   };
   return cloned;
+}
+
+/**
+ *
+ * ----------- tests
+ *
+ */
+if (import.meta.vitest) {
+  const { it, expect } = import.meta.vitest;
+
+  it("test createVNode: element node", () => {
+    {
+      const vnode = createVNode("div", { id: "foo" }, "bar");
+      expect(vnode).toStrictEqual({
+        __v_isVNode: true,
+        type: "div",
+        props: { id: "foo" },
+        el: null,
+        children: "bar",
+        component: null,
+        ctx: null,
+        shapeFlag: ShapeFlags.ELEMENT | ShapeFlags.TEXT_CHILDREN,
+      });
+    }
+    {
+      const vnode = createVNode("div", { id: "foo" }, ["bar"]);
+      expect(vnode).toStrictEqual({
+        __v_isVNode: true,
+        type: "div",
+        props: { id: "foo" },
+        el: null,
+        children: ["bar"],
+        component: null,
+        ctx: null,
+        shapeFlag: ShapeFlags.ELEMENT | ShapeFlags.ARRAY_CHILDREN,
+      });
+    }
+  });
+
+  it("test createVNode: component node", () => {
+    {
+      const vnode = createVNode({} as any, { id: "foo" }, "bar");
+      expect(vnode).toStrictEqual({
+        __v_isVNode: true,
+        type: {},
+        props: { id: "foo" },
+        el: null,
+        children: "bar",
+        component: null,
+        ctx: null,
+        shapeFlag: ShapeFlags.COMPONENT | ShapeFlags.TEXT_CHILDREN,
+      });
+    }
+    {
+      const vnode = createVNode({} as any, { id: "foo" }, ["bar"]);
+      expect(vnode).toStrictEqual({
+        __v_isVNode: true,
+        type: {},
+        props: { id: "foo" },
+        el: null,
+        children: ["bar"],
+        component: null,
+        ctx: null,
+        shapeFlag: ShapeFlags.COMPONENT | ShapeFlags.ARRAY_CHILDREN,
+      });
+    }
+  });
+
+  it("test normalizeChildren", () => {
+    {
+      const vnode = {
+        __v_isVNode: true,
+        type: "div",
+        props: { id: "foo" },
+        el: null,
+        children: "bar",
+        component: null,
+        ctx: null,
+        shapeFlag: ShapeFlags.ELEMENT | ShapeFlags.TEXT_CHILDREN,
+      } as VNode;
+      normalizeChildren(vnode, "bar");
+      expect(vnode.children).toStrictEqual([
+        {
+          __v_isVNode: true,
+          children: "bar",
+          component: null,
+          ctx: null,
+          el: null,
+          props: null,
+          shapeFlag: 8,
+          type: Text,
+        },
+      ]);
+    }
+    {
+      const vnode = {
+        __v_isVNode: true,
+        type: "div",
+        props: { id: "foo" },
+        el: null,
+        children: ["bar"],
+        component: null,
+        ctx: null,
+        shapeFlag: ShapeFlags.ELEMENT | ShapeFlags.TEXT_CHILDREN,
+      } as VNode;
+      normalizeChildren(vnode, "bar");
+      expect(vnode.children).toStrictEqual([
+        {
+          __v_isVNode: true,
+          children: "bar",
+          component: null,
+          ctx: null,
+          el: null,
+          props: null,
+          shapeFlag: 8,
+          type: Text,
+        },
+      ]);
+    }
+  });
 }
