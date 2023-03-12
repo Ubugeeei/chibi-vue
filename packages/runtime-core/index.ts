@@ -8,7 +8,6 @@ export {
   unref,
   proxyRefs,
   isRef,
-  isReactive,
   // effect
   ReactiveEffect,
   // effect scope

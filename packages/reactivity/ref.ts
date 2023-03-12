@@ -1,6 +1,6 @@
 import { Dep, createDep } from "./dep";
 import { trackEffects, triggerEffects } from "./effect";
-import { isReactive, toReactive } from "./reactive";
+import { toReactive } from "./reactive";
 
 export interface Ref<T = any> {
   value: T;
@@ -74,10 +74,10 @@ const shallowUnwrapHandlers: ProxyHandler<any> = {
   },
 };
 
-export function proxyRefs<T extends object>(objectWithRefs: T): ShallowUnwrapRef<T> {
-  return isReactive(objectWithRefs)
-    ? objectWithRefs
-    : new Proxy(objectWithRefs, shallowUnwrapHandlers);
+export function proxyRefs<T extends object>(
+  objectWithRefs: T
+): ShallowUnwrapRef<T> {
+  return new Proxy(objectWithRefs, shallowUnwrapHandlers);
 }
 
 export type ShallowUnwrapRef<T> = {
