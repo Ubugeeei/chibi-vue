@@ -74,3 +74,73 @@ export function triggerEffects(dep: Dep | ReactiveEffect[]) {
 function triggerEffect(effect: ReactiveEffect) {
   effect.run();
 }
+
+/**
+ *
+ * ----------- tests
+ *
+ */
+if (import.meta.vitest) {
+  const { it, expect, vi } = import.meta.vitest;
+
+  it("call effect", () => {
+    const mockEffect = vi.fn(() => {});
+    const effect = new ReactiveEffect(mockEffect);
+    effect.run();
+    expect(mockEffect).toHaveBeenCalledOnce();
+
+    // clean up
+    activeEffect = undefined;
+  });
+
+  it("track effect", () => {
+    /*
+     * expect targetMap to be:
+     *
+     * targetMap = Map {
+     *    target -> Map {
+     *        key -> Set()
+     *    }
+     * }
+     */
+    const key = "foo";
+    const target = { [key]: "1" };
+    track(target, key);
+    expect(targetMap.get(target)?.has(key)).toBe(true);
+
+    // clean up
+    targetMap.delete(target);
+    activeEffect = undefined;
+  });
+
+  it("trigger effect", () => {
+    const mockEffect = vi.fn(() => {});
+    const effect = new ReactiveEffect(mockEffect);
+    effect.run(); // call count 1
+    expect(mockEffect).toHaveBeenCalledTimes(1);
+
+    /*
+     * expect targetMap to be:
+     *
+     * targetMap = Map {
+     *    target -> Map {
+     *        key -> Set(effect)
+     *    }
+     * }
+     */
+    const key = "foo";
+    const target = { [key]: "1" };
+    track(target, key);
+    expect(targetMap.get(target)?.get(key)).toBe(effect.deps[0]);
+
+    trigger(target, key); // call count 2
+    expect(mockEffect).toHaveBeenCalledTimes(2);
+
+    trigger(target, key); // call count 3
+    expect(mockEffect).toHaveBeenCalledTimes(3);
+
+    // clean up
+    targetMap.delete(target);
+    activeEffect = undefined;
+  });
+}
