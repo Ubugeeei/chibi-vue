@@ -22,7 +22,6 @@
   },
   "include": [
     "packages/**/*.ts",
-    "vite-plugin/**/*.ts",
     "example/**/**.ts"
   ],
   "exclude": [

@@ -1,4 +1,4 @@
-import * as _compiler from "../packages/compiler-sfc";
+import * as _compiler from "../../compiler-sfc";
 
 import type { Plugin } from "vite";
 import { createFilter } from "vite";
