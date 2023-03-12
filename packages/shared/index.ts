@@ -36,3 +36,15 @@ export const capitalize = (str: string) =>
 
 export const toHandlerKey = (str: string) =>
   str ? `on${capitalize(str)}` : ``;
+
+/**
+ *
+ * ----------- tests
+ *
+ */
+if (import.meta.vitest) {
+  const { it, expect } = import.meta.vitest;
+  it("should work", () => {
+    expect(1).toBe(1);
+  });
+}

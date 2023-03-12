@@ -10,4 +10,7 @@ export default defineConfig({
       "chibi-vue": `${process.cwd()}/../../packages`,
     },
   },
+  define: {
+    "import.meta.vitest": "undefined",
+  },
 });

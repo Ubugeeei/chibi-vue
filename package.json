@@ -7,11 +7,13 @@
     "dev:render": "cd example/chibi-vue_render && pnpm i && pnpm run dev",
     "dev:render_setup": "cd example/chibi-vue_render_setup && pnpm i && pnpm run dev",
     "dev:render:org": "cd example/vue_render && pnpm i && pnpm run dev",
-    "dev:template:org": "cd example/vue_template && pnpm i && pnpm run dev"
+    "dev:template:org": "cd example/vue_template && pnpm i && pnpm run dev",
+    "test": "vitest"
   },
   "author": "Ubugeeei <ubuge1122@gmail.com>",
   "devDependencies": {
-    "@types/node": "^17.0.21"
+    "@types/node": "^17.0.21",
+    "vitest": "^0.29.2"
   },
   "volta": {
     "node": "18.14.0"
