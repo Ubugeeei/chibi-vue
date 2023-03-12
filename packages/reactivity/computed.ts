@@ -39,3 +39,36 @@ export function computed<T>(getter: ComputedGetter<T>): ComputedRef<T>;
 export function computed<T>(getter: ComputedGetter<T>) {
   return new ComputedRefImpl(getter);
 }
+
+/**
+ *
+ * ----------- tests
+ *
+ */
+if (import.meta.vitest) {
+  const { it, expect, vi } = import.meta.vitest;
+
+  it("test computed: should track and trigger", async () => {
+    const { ReactiveEffect, ref } = await import(".");
+    const mockEffect = vi.fn(() => {});
+    const effect = new ReactiveEffect(mockEffect);
+    effect.run();
+
+    const count = ref(1);
+
+    const computedGetter = vi.fn(() => count.value * 2);
+    const countDouble = computed(computedGetter);
+
+    expect(countDouble.value).toBe(2); // call count 1
+    expect(computedGetter).toHaveBeenCalledTimes(1);
+    
+    count.value = 2; // call count 2
+    expect(computedGetter).toHaveBeenCalledTimes(2);
+    expect(countDouble.value).toBe(4); // call count 3
+
+    count.value = 4; // call count 4
+    expect(computedGetter).toHaveBeenCalledTimes(4);
+    expect(countDouble.value).toBe(8); // call count 5
+    expect(computedGetter).toHaveBeenCalledTimes(5);
+  });
+}
