@@ -1,5 +1,6 @@
 import { ResolvedOptions } from ".";
 import { type TransformPluginContext } from "rollup";
+import { createDescriptor } from "./createDescriptor";
 
 export async function transformMain(
   code: string,
@@ -7,6 +8,8 @@ export async function transformMain(
   options: ResolvedOptions,
   pluginContext: TransformPluginContext
 ) {
+  const { descriptor } = createDescriptor(filename, code, options);
+
   // TODO: parse and compile
   return {
     code: `
