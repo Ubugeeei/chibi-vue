@@ -30,9 +30,9 @@ Currently, I am still in the process of implementation, but after implementation
   - ✅ directives
     - ✅ v-on
   - ✅ mustache
-- ❌ sfc compiler
-  - basic
-  - script setup
-- ❌ extension
-  - store
-  - router
+- extension
+  - sfc compiler (vite plugin)
+    - ⚠️ basic
+    - ❌ script setup
+  - ❌ store
+  - ❌ router
