@@ -6,6 +6,7 @@
     "dev:template": "cd example/chibi-vue_template && pnpm i && pnpm run dev",
     "dev:render": "cd example/chibi-vue_render && pnpm i && pnpm run dev",
     "dev:render_setup": "cd example/chibi-vue_render_setup && pnpm i && pnpm run dev",
+    "dev:render_sfc": "cd example/chibi-vue_sfc && pnpm i && pnpm run dev",
     "dev:render:org": "cd example/vue_render && pnpm i && pnpm run dev",
     "dev:template:org": "cd example/vue_template && pnpm i && pnpm run dev",
     "test": "vitest"
@@ -17,5 +18,8 @@
   },
   "volta": {
     "node": "18.14.0"
+  },
+  "dependencies": {
+    "vite": "^4.1.4"
   }
 }
