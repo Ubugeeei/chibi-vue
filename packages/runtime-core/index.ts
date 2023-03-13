@@ -16,6 +16,7 @@ export {
 export type { Ref, ReactiveFlags, ComputedRef } from "../reactivity";
 
 export { computed } from "./apiComputed";
+export { onMounted } from "./apiLifecycle";
 
 export { h } from "./h";
 
