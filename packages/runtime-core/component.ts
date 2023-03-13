@@ -7,12 +7,15 @@ import {
   ComponentPublicInstance,
   PublicInstanceProxyHandlers,
 } from "./componentPublicInstance";
+import { LifecycleHooks } from "./enums";
 import { VNode, VNodeChild } from "./vnode";
 
 export type Data = Record<string, unknown>;
 
 export type Component = ConcreteComponent;
 export type ConcreteComponent = ComponentOptions;
+
+type LifecycleHook<TFn = Function> = TFn[] | null;
 
 export interface ComponentInternalInstance {
   type: ConcreteComponent;
@@ -59,12 +62,12 @@ export interface ComponentInternalInstance {
    */
   setupState: Data;
 
+  // lifecycle
   isMounted: boolean;
-
-  // [LifecycleHooks.BEFORE_CREATE]: LifecycleHook
-  // [LifecycleHooks.CREATED]: LifecycleHook
-  // [LifecycleHooks.BEFORE_MOUNT]: LifecycleHook
-  // [LifecycleHooks.MOUNTED]: LifecycleHook
+  /**
+   * @internal
+   */
+  [LifecycleHooks.MOUNTED]: LifecycleHook;
 }
 
 export type InternalRenderFunction = {
@@ -98,6 +101,7 @@ export function createComponentInstance(
     data: {},
     setupState: {},
     isMounted: false,
+    m: null,
   };
 
   instance.ctx = { _: instance };
