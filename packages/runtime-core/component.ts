@@ -129,12 +129,14 @@ export const setupComponent = (instance: ComponentInternalInstance) => {
   // Composition API
   const { setup } = Component;
   if (setup) {
+    setCurrentInstance(instance);
     const setupResult = setup();
     if (isFunction(setupResult)) {
       instance.render = setupResult as InternalRenderFunction;
     } else if (isObject(setupResult)) {
       instance.setupState = proxyRefs(setupResult);
     }
+    unsetCurrentInstance();
   }
 
   if (compile && !Component.render) {
