@@ -1,5 +1,5 @@
 <script>
-import { ref, computed } from "chibi-vue";
+import { ref, computed, onMounted } from "chibi-vue";
 
 export default {
   setup() {
@@ -10,6 +10,10 @@ export default {
       count.value++;
       message.value = `Hello chibi-vue! ${count.value} * 2 = ${countDouble.value}`;
     };
+
+    onMounted(() => {
+      console.log("mounted!");
+    });
     return { message, changeMessage };
   },
 };
