@@ -16,23 +16,31 @@ Currently, I am still in the process of implementation, but after implementation
 
 ## status
 
-- ✅ reactive system
+- ✅ Reactive System
   - ✅ reactive
   - ✅ ref
   - ✅ computed
-- ✅ virtual dom & renderer
+- ✅ Virtual Dom & Renderer
   - ✅ h function
   - ✅ patch rendering
-- ✅ API
-  - ✅ Options API
-  - ✅ Composition API
-- ✅ template compiler
+- Component
+  - ✅ API
+    - ✅ Options API
+    - ✅ Composition API
+  - lifecycle hooks
+    - created
+    - mounted
+  - props / emit
+- Template Compiler
   - ✅ directives
     - ✅ v-on
+    - v-if
+    - v-for
   - ✅ mustache
-- extension
+- Extensions
   - sfc compiler (vite plugin)
     - ⚠️ basic
-    - ❌ script setup
-  - ❌ store
-  - ❌ router
+    - script setup
+    - style block
+  - store
+  - router
