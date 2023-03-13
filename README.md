@@ -27,8 +27,8 @@ Currently, I am still in the process of implementation, but after implementation
   - ✅ API
     - ✅ Options API
     - ✅ Composition API
-  ✅ lifecycle hooks
-    ✅ mounted
+  - ✅ lifecycle hooks
+    - ✅ mounted
   - props / emit
 - Template Compiler
   - ✅ directives
