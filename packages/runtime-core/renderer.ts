@@ -253,9 +253,15 @@ export function createRenderer(options: RendererOptions) {
   ) => {
     const componentUpdateFn = () => {
       if (!instance.isMounted) {
+        const { m } = instance;
         const subTree = (instance.subTree = renderComponentRoot(instance));
         patch(null, subTree, container, anchor);
         initialVNode.el = subTree.el;
+
+        // mounted hook
+        // NOTE: scheduled on post-render
+        Promise.resolve().then(() => m?.forEach((cb) => cb()));
+
         instance.isMounted = true;
       } else {
         let { next, vnode } = instance;
