@@ -9,7 +9,7 @@ export function transformTemplateInMain(
   return {
     ...result,
     code: result.code.replace(
-      /\nexport (function|const) (render|ssrRender)/,
+      /\n(function|const) (render|ssrRender)/,
       "\n$1 _sfc_$2"
     ),
   };
