@@ -38,7 +38,7 @@ Currently, I am still in the process of implementation, but after implementation
   - ✅ mustache
 - Extensions
   - sfc compiler (vite plugin)
-    - ⚠️ basic
+    - ✅ basic
     - script setup
     - style block
   - store
