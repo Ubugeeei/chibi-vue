@@ -1,4 +1,4 @@
-import { ElementNode, NodeTypes } from "../compiler-core";
+import { BindingMetadata, ElementNode, NodeTypes } from "../compiler-core";
 import * as CompilerDOM from "../compiler-dom";
 import { TemplateCompiler } from "./compileTemplate";
 
@@ -23,10 +23,8 @@ export interface SFCTemplateBlock extends SFCBlock {
 
 export interface SFCScriptBlock extends SFCBlock {
   type: "script";
-  // TODO: use ESTree AST
-  // imports?: Record<string, ImportBinding>;
-  // scriptAst?: import("@babel/types").Statement[];
-  // scriptSetupAst?: import("@babel/types").Statement[];
+  bindings?: BindingMetadata;
+  scriptAst?: import("@babel/types").Statement[];
 }
 
 export interface SFCDescriptor {
