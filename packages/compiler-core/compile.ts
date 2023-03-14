@@ -23,7 +23,10 @@ export function getBaseTransformPreset(): TransformPreset {
   ];
 }
 
-export function baseCompile(template: string | RootNode) {
+export function baseCompile(
+  template: string | RootNode,
+  { __BROWSER__ }: { __BROWSER__: boolean }
+) {
   // parse
   const ast = isString(template) ? baseParse(template) : template;
 
@@ -34,8 +37,8 @@ export function baseCompile(template: string | RootNode) {
     directiveTransforms: { ...directiveTransforms },
   });
 
-  // codegen
-  const code = generate(ast);
+  // codegenga 
+  const code = generate(ast, { __BROWSER__ });
 
   return code;
 }
