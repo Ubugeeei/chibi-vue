@@ -38,21 +38,29 @@ export interface CodegenContext {
   offset: number;
   indentLevel: number;
   runtimeGlobalName: string;
+  runtimeModuleName: string;
   helper(key: symbol): string;
   push(code: string, node?: CodegenNode): void;
   indent(): void;
   deindent(withoutNewLine?: boolean): void;
   newline(): void;
+  __BROWSER__: boolean;
 }
 
-function createCodegenContext(): CodegenContext {
+function createCodegenContext({
+  __BROWSER__,
+}: {
+  __BROWSER__: boolean;
+}): CodegenContext {
   const context: CodegenContext = {
     code: ``,
     column: 1,
     line: 1,
     offset: 0,
     indentLevel: 0,
-    runtimeGlobalName: `Vue`,
+    runtimeGlobalName: `ChibiVue`,
+    runtimeModuleName: "chibi-vue",
+    __BROWSER__,
     helper(key) {
       return `_${helperNameMap[key]}`;
     },
@@ -81,8 +89,11 @@ function createCodegenContext(): CodegenContext {
   return context;
 }
 
-export function generate(ast: RootNode): CodegenResult {
-  const context = createCodegenContext();
+export function generate(
+  ast: RootNode,
+  { __BROWSER__ }: { __BROWSER__: boolean }
+): CodegenResult {
+  const context = createCodegenContext({ __BROWSER__ });
   const { push } = context;
 
   genFunctionPreamble(ast, context);
@@ -106,9 +117,14 @@ export function generate(ast: RootNode): CodegenResult {
 }
 
 function genFunctionPreamble(ast: RootNode, context: CodegenContext) {
-  const { push, newline, runtimeGlobalName } = context;
+  const { push, newline, runtimeGlobalName, runtimeModuleName, __BROWSER__ } =
+    context;
 
-  push(`const _Vue = ${runtimeGlobalName}\n`);
+  if (__BROWSER__) {
+    push(`const _Vue = ${runtimeGlobalName}\n`);
+  } else {
+    push(`import * as _Vue from '${runtimeModuleName}'\n`);
+  }
 
   const staticHelpers = [
     CREATE_VNODE,
@@ -119,9 +135,8 @@ function genFunctionPreamble(ast: RootNode, context: CodegenContext) {
     .map(aliasHelper)
     .join(", ");
   push(`const { ${staticHelpers} } = _Vue\n`);
-
   newline();
-  push(`return `);
+  if (__BROWSER__) push(`return `);
 }
 
 function genNode(node: CodegenNode | symbol | string, context: CodegenContext) {
