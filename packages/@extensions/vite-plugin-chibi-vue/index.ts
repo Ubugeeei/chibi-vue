@@ -20,7 +20,7 @@ export default function chibiVuePlugin(): Plugin {
     name: "vite:chibi-vue",
     transform(code, id, _) {
       if (!filter(id)) return;
-      return transformMain(code, id, options, this);
+      return transformMain(code, id, options);
     },
   };
 }
