@@ -1,25 +1,40 @@
 import { ResolvedOptions } from ".";
-import { PluginContext, type TransformPluginContext } from "rollup";
 import { createDescriptor } from "./createDescriptor";
 import { resolveScript } from "./script";
 import { SFCDescriptor } from "~/packages/compiler-sfc";
+import { transformTemplateInMain } from "./template";
 
 export async function transformMain(
   code: string,
   filename: string,
-  options: ResolvedOptions,
-  pluginContext: TransformPluginContext
+  options: ResolvedOptions
 ) {
   const { descriptor } = createDescriptor(filename, code, options);
-  const { code: scriptCode } = genScriptCode(descriptor, options);
 
-  // TODO: parse and compile
-  const resolvedCode = descriptor.script?.content.replace(
-    "export default {",
-    `export default {\n  template: \`${
-      descriptor.template?.content.trim() ?? ""
-    }\`,`
-  );
+  // script
+  const { code: scriptCode } = genScriptCode(descriptor, options);
+  // template
+  const { code: templateCode } = genTemplateCode(descriptor, options);
+  
+  const attachedProps: [string, string][] = [];
+  if (templateCode) {
+    attachedProps.push(["render", "_sfc_render"]);
+  }
+
+  const output: string[] = [scriptCode, templateCode];
+  output.push("\n");
+
+  if (attachedProps.length) {
+    output.push(
+      `export default { ..._sfc_main, ${attachedProps
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(", ")} }`
+    );
+  } else {
+    output.push(`export default _sfc_main`);
+  }
+
+  let resolvedCode = output.join("\n");
 
   return { code: resolvedCode };
 }
@@ -37,4 +52,9 @@ function genScriptCode(
   }
 
   return { code: scriptCode };
+}
+
+function genTemplateCode(descriptor: SFCDescriptor, options: ResolvedOptions) {
+  const template = descriptor.template!;
+  return transformTemplateInMain(template.content.trim(), options);
 }
