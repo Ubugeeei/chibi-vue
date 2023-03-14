@@ -30,3 +30,15 @@ export interface TransformOptions {
    */
   directiveTransforms?: Record<string, DirectiveTransform | undefined>;
 }
+
+export type BindingMetadata = {
+  [key: string]: BindingTypes | undefined;
+} & {
+  __isScriptSetup?: boolean;
+};
+
+export const enum BindingTypes {
+  DATA = "data",
+  SETUP_MAYBE_REF = "setup-maybe-ref",
+  OPTIONS = "options",
+}
